@@ -235,12 +235,14 @@ void DeviceSetWidget::delayTimeUpdate(const deviceDelayTime &t)
 
 void DeviceSetWidget::on_remoterLermButton_clicked()
 {
-
+    if(!z1801)
+        return;
 }
 
 void DeviceSetWidget::on_detecterLermButton_clicked()
 {
-
+    if(!z1801)
+        return;
 }
 
 
