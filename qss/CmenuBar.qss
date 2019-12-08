@@ -1,0 +1,435 @@
+
+
+CMenuBar > QTabBar::tab{
+height:40px;
+width:80px;
+}
+
+CMenuBar > QTabBar::tab{
+background-color:rgb(80,80,80);
+color:white;
+height:40px;
+}
+
+CMenuBar > QTabBar::tab:hover{
+background-color:rgb(80,80,80);
+color:blue;
+}
+CMenuBar > QTabBar::tab:selected{
+background-color:red;
+color:white;
+}
+
+CMenuBar > QTabBar::tab:top{
+height:40px;
+}
+
+QWidget#CmenuBar{
+background-color: rgb(80,80,80);
+color:white;
+}
+
+Indicator{
+border-radius:15px;
+color:white;
+font:15px,bold;
+}
+QLabel#title{
+border-radius:15px;
+color:black;
+font:italic bold 15px,sans-serif;
+}
+QLabel{
+/*color:white;*/
+font:bold;
+}
+QMenuBar::item{
+margin:0px;
+padding:0px;
+border:none;
+}
+
+QMenuBar{
+width:40px;
+height:40px;
+background-color: rgb(80,80,80);
+}
+
+Screen{
+background-color: rgb(170,170,250);
+}
+
+QStatusBar {
+    background-color:rgb(243,243,243);
+}
+
+QStatusBar::item {
+    border: 1px solid red;
+    border-radius: 3px;
+}
+
+DevMainDislay
+{
+    background:url(:/image/woodbackground.png);
+}
+
+DocumetDisplay{
+background-color: rgb(170,170,250);
+}
+
+QWidget#screen
+{
+background-color: rgb(170,170,250);
+}
+
+DevPartDisplay
+{
+    background:url(:/image/woodbackground.png);
+}
+
+QTreeView{
+background-color:rgb(243,243,243);
+}
+
+CDockWidget{
+background-color:rgb(243,243,243);
+}
+
+QListWidget{
+background-color:rgb(243,243,243);
+}
+
+QLabel#areaTitle{
+background:rgb(200,200,200);
+}
+
+QPushButton#foldButton{
+border:none;
+background:rgb(200,200,200);
+}
+
+QPushButton#foldButton:hover{
+background:rgb(250,250,250);
+border:none;
+}
+
+QPushButton#foldButton:pressed{
+background:rgb(120,120,120);
+border:none;
+}
+
+QPushButton#toMinButton
+{
+    background:url(:/image/toMin.png);
+    border:none;
+    transform-rorate:90deg;
+}
+
+QPushButton#toMaxButton
+{
+    background:url(:/image/toMax.png);
+    border:none;
+}
+
+
+QWidget#titleWidget{
+background:rgb(200,200,200);
+}
+
+QHBoxLayout#title{
+background:black;
+}
+
+QTableView{
+border:none;
+}
+
+QTreeView{
+border:none;
+}
+
+BottomBar{
+background:gray;
+}
+
+ControlWidget{
+background:gray;
+}
+
+PTZControl#ptz{
+background-color: rgb(200,200,200);
+}
+
+QWidget#ptzWidget{
+background-image: url(:/image/ptz_control/PTZ_bg.png);
+}
+
+QPushButton#ptzButton_T{
+background-image: url(:/image/ptz_control/PTZ_T_normal.png);
+border:none;
+}
+
+QPushButton#ptzButton_T::hover{
+background-image: url(:/image/ptz_control/PTZ_T_hover.png);
+border:none;
+}
+
+QPushButton#ptzButton_T::pressed{
+background-image: url(:/image/ptz_control/PTZ_T_pressed.png);
+border:none;
+}
+
+QPushButton#ptzButton_R{
+background-image: url(:/image/ptz_control/PTZ_R_normal.png);
+border:none;
+}
+
+QPushButton#ptzButton_R::hover{
+background-image: url(:/image/ptz_control/PTZ_R_hover.png);
+border:none;
+}
+
+QPushButton#ptzButton_R::pressed{
+background-image: url(:/image/ptz_control/PTZ_R_pressed.png);
+border:none;
+}
+
+QPushButton#ptzButton_B{
+background-image: url(:/image/ptz_control/PTZ_B_normal.png);
+border:none;
+}
+
+QPushButton#ptzButton_B::hover{
+background-image: url(:/image/ptz_control/PTZ_B_hover.png);
+border:none;
+}
+
+QPushButton#ptzButton_B::pressed{
+background-image: url(:/image/ptz_control/PTZ_B_pressed.png);
+border:none;
+}
+
+QPushButton#ptzButton_L{
+background-image: url(:/image/ptz_control/PTZ_L_normal.png);
+border:none;
+}
+
+QPushButton#ptzButton_L::hover{
+background-image: url(:/image/ptz_control/PTZ_L_hover.png);
+border:none;
+}
+
+QPushButton#ptzButton_L::pressed{
+background-image: url(:/image/ptz_control/PTZ_L_pressed.png);
+border:none;
+}
+
+
+/*水平滚动条*/
+QScrollBar:horizontal
+{
+    border-radius:4px;
+    background: white;
+    height: 10px;
+    margin: 0px 10px 0 10px;
+}
+QScrollBar:horizontal:hover
+{
+    border-radius:4px;
+    background: rgb(228,228,228);
+    height: 10px;
+    margin: 0px 10px 0 10px;
+}
+
+QScrollBar::handle:horizontal
+{
+    background: rgb(202,202,202);
+    border-radius:4px;
+    min-width: 20px;
+}
+QScrollBar::handle:horizontal:hover
+{
+    background: rgb(113, 113, 113);
+    border-radius:4px;
+    min-width: 20px;
+}
+
+QScrollBar::add-line:horizontal
+{
+    background: none;
+    width: 10px;
+    subcontrol-position: right;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:horizontal
+{
+    background: none;
+    width: 10px;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::left-arrow:horizontal
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowleft_normal.png);
+}
+QScrollBar::left-arrow:horizontal:hover
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowleft_highlight.png);
+}
+QScrollBar::left-arrow:horizontal:pressed
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowleft_down.png);
+}
+
+QScrollBar::right-arrow:horizontal
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowright_normal.png);
+}
+QScrollBar::right-arrow:horizontal:hover
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowright_highlight.png);
+}
+QScrollBar::right-arrow:horizontal:pressed
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowright_down.png);
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
+{
+    background: none;
+}
+
+/*以下为垂直滚动条*/
+
+QScrollBar:vertical
+{
+    border-radius:4px;
+    background: white;
+    width: 10px;
+    margin: 10px 0px 10 0px;
+}
+QScrollBar:vertical:hover
+{
+    border-radius:4px;
+    background: rgb(228,228,228);
+    width: 10px;
+    margin: 10px 0px 10 0px;
+}
+
+QScrollBar::handle:vertical
+{
+    background: rgb(202,202,202);
+    border-radius:4px;
+    min-height: 20px;
+}
+QScrollBar::handle:vertical:hover
+{
+    background: rgb(113,113,113);
+    border-radius:4px;
+    min-height: 20px;
+}
+
+QScrollBar::add-line:vertical
+{
+    background: none;
+    height: 10px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:vertical
+{
+    background: none;
+    height: 10px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::up-arrow:vertical
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowup_normal.png);
+}
+QScrollBar::up-arrow:vertical:hover
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowup_highlight.png);
+}
+QScrollBar::up-arrow:vertical:pressed
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowup_down.png);
+}
+
+QScrollBar::down-arrow:vertical
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowdown_normal.png);
+}
+QScrollBar::down-arrow:vertical:hover
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowdown_highlight.png);
+}
+QScrollBar::down-arrow:vertical:pressed
+{
+    width: 10px;
+    height: 10px;
+    background: url(:/ScrollBar/ScrollBar/scrollbar_arrowdown_down.png);
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical
+{
+    background: none;
+}
+
+
+QTableWidget
+{
+    background:#FFFFFF;
+    border:none;
+
+    font-size:12px;
+    font-family:"Microsoft YaHei";
+    color:#666666;
+    }
+
+
+QTableWidget::item
+{
+    border-bottom:1px solid #EEF1F7 ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

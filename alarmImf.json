@@ -1,0 +1,24 @@
+﻿{
+    "devideName" : "报警主机",
+     
+    "partitionList" : [
+        {
+            "partitionNum" : "1",
+            "partitionName" : "第一分区"
+        },
+        {
+            "partitionNum" : "2",
+            "partitionName" : "第二分区"
+        }
+    ],
+    "alarmLisr" : [
+        {
+            "alarmNum" : "1",
+            "alarmName" : "第一防区"
+        },
+        {
+            "alarmNum" : "2",
+            "alrmName" : "第二防区"
+        }
+    ]
+}
