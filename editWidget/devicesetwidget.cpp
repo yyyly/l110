@@ -237,11 +237,15 @@ void DeviceSetWidget::on_remoterLermButton_clicked()
 {
     if(!z1801)
         return;
+    if(!z1801->isLogin())
+        return;
 }
 
 void DeviceSetWidget::on_detecterLermButton_clicked()
 {
     if(!z1801)
+        return;
+    if(!z1801->isLogin())
         return;
 }
 
