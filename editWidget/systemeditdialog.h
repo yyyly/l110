@@ -33,7 +33,6 @@ private:
 protected:
     void paintEvent(QPaintEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);
-    void showEvent(QShowEvent *event);
 private slots:
     void on_dirSaveButton_clicked();
     void on_dirDefaultButton_clicked();

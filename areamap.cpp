@@ -1,4 +1,4 @@
-#include "areamap.h"
+  #include "areamap.h"
 #include <QPixmap>
 #include <QPalette>
 #include <QAction>
@@ -174,7 +174,9 @@ void AreaMap::deleteArea_clicked()
 void AreaMap::CloseScreen()
 {
     currentPlayNum = -1;
-    //closeChannal();
+    CameraDeviceImf *imf = getScreen()->getCameraDeviceImf();
+    CameroNet *cameroNet = CameroNet::getInstance();
+    int r = cameroNet->stopPlay(*imf,getScreen());
 }
 
 

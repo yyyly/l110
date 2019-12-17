@@ -93,9 +93,12 @@ void MessageRecord::update()
 void MessageRecord::itemButtonClicked(QModelIndex index)
 {
     QString str = index.data().toString();
+    QString moldStr = str.mid(0,1);
+    int mold = moldStr.toLatin1().data()[0] - 48;
+    str.remove(0,1);
     player->reSet();
     player->hide();
-    player->play(str);
+    player->play(str,mold);
     player->raise();
     player->setGeometry(450,200,460,345);
     player->show();

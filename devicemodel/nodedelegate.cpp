@@ -7,7 +7,8 @@
 #include <QColor>
 #include <QStyleOptionViewItem>
 
-NodeDelegate::NodeDelegate()
+NodeDelegate::NodeDelegate(QObject *parent)
+    :QItemDelegate(parent)
 {
     QPixmap *icon = nullptr;
     icon = new QPixmap(":/image/defence.png");
@@ -18,6 +19,17 @@ NodeDelegate::NodeDelegate()
     iconVector.append(icon);
     icon = new QPixmap(":/image/noStatu.png");
     iconVector.append(icon);
+}
+
+NodeDelegate::~NodeDelegate()
+{
+    QPixmap *icon;
+    foreach (icon, iconVector) {
+        if(icon)
+        {
+            delete icon;
+        }
+    }
 }
 
 void NodeDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const

@@ -53,6 +53,7 @@ class AreaMap : public QWidget
     Q_OBJECT
 public:
     explicit AreaMap(QWidget *parent = 0);
+    Screen * getScreen(){return screen;}
 private:
     MapScence *scence;
     CustomView *view;

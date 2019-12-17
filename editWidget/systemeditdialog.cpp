@@ -43,7 +43,7 @@ void SystemEditDialog::setImageSaveDir()
 {
 
     QString dir = QFileDialog::getExistingDirectory(this, tr("图片保存路径"),
-                                                    "D:/l110/image",
+                                                    G_PicSaveAdd,
                                                     QFileDialog::ShowDirsOnly
                                                     | QFileDialog::DontResolveSymlinks);
     if(!dir.isEmpty())
@@ -55,7 +55,7 @@ void SystemEditDialog::setImageSaveDir()
 void SystemEditDialog::setVedioSaveDir()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("视频保存路径"),
-                                                    "D:/l110/image",
+                                                    G_VedioSaveAdd,
                                                     QFileDialog::ShowDirsOnly
                                                     | QFileDialog::DontResolveSymlinks);
     if(!dir.isEmpty())
@@ -138,14 +138,4 @@ void SystemEditDialog::on_dirDefaultButton_clicked()
 {
     ui->imageDirEdit->setText(defPicSaveDir);
     ui->vedioDirEdit->setText(defVedioSaveDir);
-}
-
-void SystemEditDialog::showEvent(QShowEvent *event)
-{
-    Q_UNUSED(event)
-    QSettings settings("d:/settings.ini",QSettings::IniFormat);
-    settings.beginGroup("SAVE DIR");
-    ui->vedioDirEdit->setText(settings.value("vedioSaveDir").toString());
-    ui->imageDirEdit->setText(settings.value("imageSaveDir").toString());
-    settings.endGroup();
 }

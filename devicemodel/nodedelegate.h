@@ -13,7 +13,8 @@ class NodeDelegate : public QItemDelegate
 {
     Q_OBJECT
 public:
-    NodeDelegate();
+    explicit NodeDelegate(QObject *parent = nullptr);
+    ~NodeDelegate();
 protected:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;

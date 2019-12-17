@@ -285,7 +285,7 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
     if(type == "24小时有声报警" || type == "出/入口报警" || type == "24小时无声报警" || type == "防盗防区"
             || type == "火警防区" || type == "紧急报警")
     {
-        areaMap->alarmNumChecked(alarmId);
+        //areaMap->alarmNumChecked(alarmId);
         model->setData(model->index(row,ALARM_CLASS),ALARMING_WARMING);
         QSqlQuery query;
         query.exec(QString("SELECT serial,channal_num FROM vedioLink WHERE ALARM_NUM = %1").arg(alarmId));
@@ -303,18 +303,23 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
                 }
                 QString file = QDateTime::currentDateTime().toString("yyyy-MM-dd_hhmmss.zzz") + ".mp4";
                 QString fileName = fileDir + "/" + file;
-                QString *pFileName = new QString(fileName);//记得完成后释放内存
-                LONG PlayHandle = cameroNet->recordVedio(&imf,query.value(1).toInt(),pFileName);
+                QString *pFileName = new QString(fileName);
+                LLONG PlayHandle = cameroNet->recordVedio(&imf,query.value(1).toInt(),pFileName,areaMap->getScreen());
                 if(PlayHandle >= 0)//打开成功
                 {
+                    imf.playId = PlayHandle;
+                    areaMap->getScreen()->bindDevice(&imf);
+                    areaMap->getScreen()->show();
+                    areaMap->getScreen()->setGeometry(35,35,280,210);
                     myTimer *timer = new myTimer(PlayHandle,this);
                     connect(timer,SIGNAL(timeOut(LONG)),this,SLOT(stopRecord(LONG)));
                     timer->start(30000);
-                    model->setData(model->index(row,VEDIO_PATH),fileName);
-                    delete pFileName;
+                    QString file = QString("%1").arg(imf.mold) + fileName;
+                    model->setData(model->index(row,VEDIO_PATH),file);
+
                 }
                 else {//释放内存
-                    delete pFileName;
+
                 }
             }
         }
