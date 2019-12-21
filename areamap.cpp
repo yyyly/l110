@@ -17,10 +17,10 @@ AreaMap::AreaMap(QWidget *parent)
       dockWidget(new CDockWidget),
       view(new CustomView),
       scence(new MapScence),
-      screen(new Screen(1,view)),
+      screenPools(new ScreenPools(view)),
       bar(new CStatuBar(view)),
       playId(-1),
-      currentPlayNum(-1)
+      preScreen(nullptr)
 {
     setAutoFillBackground(true);
     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -83,8 +83,8 @@ AreaMap::AreaMap(QWidget *parent)
         item->setMovealble(false);
         scence->addItem(item);
     }
-    screen->flag = 1;//设置这个是为了操作screen界面时不影响全局变量
-    screen->hide();
+    //screen->flag = 1;//设置这个是为了操作screen界面时不影响全局变量
+    //screen->hide();
 
     bar->hide();
 
@@ -92,7 +92,11 @@ AreaMap::AreaMap(QWidget *parent)
     connect(dockWidget->addButton,SIGNAL(clicked(bool)),this,SLOT(addArea_Clicked()));
     connect(dockWidget->editButton,SIGNAL(clicked(bool)),this,SLOT(editArea_Clicked()));
     connect(dockWidget->deleteButton,SIGNAL(clicked(bool)),this,SLOT(deleteArea_clicked()));
-    connect(screen,SIGNAL(cameraHide()),this,SLOT(CloseScreen()));
+    //connect(screen,SIGNAL(cameraHide()),this,SLOT(CloseScreen()));
+    Screen *screen;
+    foreach (screen, screenPools->getScreenVec()) {
+        connect(screen,SIGNAL(cameraHide()),this,SLOT(CloseScreen()));
+    }
 
 }
 
@@ -173,10 +177,14 @@ void AreaMap::deleteArea_clicked()
 
 void AreaMap::CloseScreen()
 {
-    currentPlayNum = -1;
+    //currentPlayNum = -1;
+    Screen *s = qobject_cast<Screen *>(sender());
+    s->setPlayState(Screen::UNPLAY);
+    int t = playScreenMap.key(s);
+    playScreenMap.remove(t);
     CameraDeviceImf *imf = getScreen()->getCameraDeviceImf();
     CameroNet *cameroNet = CameroNet::getInstance();
-    int r = cameroNet->stopPlay(*imf,getScreen());
+    cameroNet->stopPlay(*imf,getScreen());
 }
 
 
@@ -204,7 +212,7 @@ void AreaMap::areaMapChanged(int n)
 void AreaMap::updateAreaMap(AreaMapOption *option)
 {
     scence->clear();
-    screen->hide();
+    //screen->hide();
     bar->hide();
     AreaOption area;
     QImage image(option->backIamgePath);
@@ -216,34 +224,21 @@ void AreaMap::updateAreaMap(AreaMapOption *option)
         item->setAlarmName(QString("%1防区").arg(item->getNum()));
         item->setMovealble(false);
         scence->addItem(item);
-        if(currentPlayNum != -1)//说明有一个防区图上正在播放视频
+        /*if(currentPlayNum != -1)//说明有一个防区图上正在播放视频
         {
             if(currentPlayNum == item->getNum())
             {
-                screen->show();
+                //screen->show();
                 view->centerOn(item->getAreaOption().pos);
             }
 
-        }
+        }*/
     }
 }
 
 void AreaMap::alarmNumChecked(int num)
 {
-    if(num == currentPlayNum)//这个防区已经有在播放，直接退出
-    {
-        return;
-    }
     CameroNet *cameroNet = CameroNet::getInstance();
-    if(currentPlayNum != -1)//说明前一次有播放，先停止播放
-    {
-        if(playId != -1)
-        {
-            cameroNet->stopPlay(playId);//这个接口在设备离线的时候耗时较长，会导致主界面操作卡顿，需要用多线程方法处理。
-            screen->hide();
-        }
-        currentPlayNum = -1;
-    }
     bar->hide();
     AreaMapOption mapOption;
     AreaOption option;
@@ -268,7 +263,10 @@ void AreaMap::alarmNumChecked(int num)
     }
     if(i == areaMapOptionList.count() && j == mapOption.areaList.count())
     {
-        screen->hide();
+        if(preScreen != nullptr)
+        {
+            preScreen->hide();
+        }
         bar->showMessage("防区未添加到防区图",3000);
         int w = (this->width() - bar->width()) / 2 - bar->width();
         int h = 20;
@@ -278,6 +276,18 @@ void AreaMap::alarmNumChecked(int num)
     //areaMapChanged(i);
     dockWidget->tabList->setCurrentRow(i);
     view->centerOn(option.pos);
+    Screen *s = playScreenMap.value(num);
+    if(s)//说明已有在播放
+    {
+        if(s == preScreen)
+        {
+            return;
+        }
+        preScreen->hide();
+        preScreen = s;
+        s->show();
+        return;
+    }
     QSqlQuery query;
     query.exec(QString("SELECT serial,channal_num FROM vedioLink WHERE ALARM_NUM = %1").arg(option.num));
     if(query.next())
@@ -286,16 +296,31 @@ void AreaMap::alarmNumChecked(int num)
         if(imf.luserId != -1 && imf.lineState == Camero::OnLine)
         {
             QPointF pos = view->mapFromScene(option.pos);
+            Screen *screen = getScreen();
+            if(screen == nullptr)
+            {
+                return;
+            }
+            if(preScreen)
+            {
+                preScreen->hide();
+            }
+            preScreen = screen;
+            playScreenMap.insert(num,screen);
             screen->setGeometry(pos.x()+35,pos.y(),280,210);
+            screen->setPlayState(Screen::PLAY);
+            screen->raise();
             screen->show();
             playId = cameroNet->realPlay(&imf,1,*screen);
-            currentPlayNum = num;
         }
         else {
             //如果上一次通道有成功播放，需要先停止播放。
-            CameroNet *cameroNet = CameroNet::getInstance();
-            cameroNet->stopPlay(playId);
-            screen->hide();
+            //CameroNet *cameroNet = CameroNet::getInstance();
+            //cameroNet->stopPlay(playId);
+            if(preScreen != nullptr)
+            {
+                preScreen->hide();
+            }
             QPointF pos = view->mapFromScene(option.pos);
             bar->setGeometry(pos.x()+35,pos.y(),80,20);
             bar->showMessage("视频主机不在线",3000);
@@ -304,7 +329,7 @@ void AreaMap::alarmNumChecked(int num)
     }
     else
     {
-        screen->hide();
+        preScreen->hide();
         QPointF pos = view->mapFromScene(option.pos);
         bar->setGeometry(pos.x()+35,pos.y(),80,20);
         bar->showMessage("未绑定视频",3000);
@@ -318,7 +343,7 @@ void AreaMap::closeChannal()
 {
     CameroNet *cameroNet = CameroNet::getInstance();
     cameroNet->stopPlay(playId);
-    screen->hide();
+    //screen->hide();
 }
 
 CDockWidget::CDockWidget(QWidget *parent)

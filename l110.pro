@@ -30,6 +30,7 @@ INCLUDEPATH += D:\Documents\player
 
 
 SOURCES += main.cpp\
+    screenpools.cpp \
     z1801.cpp \
     wrapper.cpp \
     cmenubar.cpp \
@@ -97,6 +98,7 @@ SOURCES += main.cpp\
 
 
 HEADERS  += \
+    screenpools.h \
     z1801p.h \
     wrapper.h \
     cmenubar.h \

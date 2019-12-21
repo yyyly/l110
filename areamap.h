@@ -19,6 +19,7 @@
 #include "cameronet.h"
 #include "screen.h"
 #include "cstatubar.h"
+#include "screenpools.h"
 
 class QStatusBar;
 class CDockWidget : public QWidget
@@ -53,7 +54,7 @@ class AreaMap : public QWidget
     Q_OBJECT
 public:
     explicit AreaMap(QWidget *parent = 0);
-    Screen * getScreen(){return screen;}
+    Screen * getScreen(){return screenPools->getSceen();}
 private:
     MapScence *scence;
     CustomView *view;
@@ -61,12 +62,14 @@ private:
     AddAreaMap *addAreaDialog;
     CDockWidget *dockWidget;
     QList<AreaMapOption> areaMapOptionList;
-    Screen *screen;
+    ScreenPools *screenPools;
     //QStatusBar *bar;
     CStatuBar *bar;
     LONG playId;
     QList<int> noBindList;
-    int currentPlayNum;//目前正在播放的防区，初始值为-1,表示没有正在播放的防区
+    Screen *preScreen;
+    QMap<int,Screen*> playScreenMap;
+    //int currentPlayNum;//目前正在播放的防区，初始值为-1,表示没有正在播放的防区
 signals:
 
 public slots:
