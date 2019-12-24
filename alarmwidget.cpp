@@ -286,6 +286,11 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
             || type == "火警防区" || type == "紧急报警")
     {
         //areaMap->alarmNumChecked(alarmId);
+        Screen *pre = areaMap->getPreScreen();
+        if(pre)
+        {
+            pre->hide();
+        }
         model->setData(model->index(row,ALARM_CLASS),ALARMING_WARMING);
         QSqlQuery query;
         query.exec(QString("SELECT serial,channal_num FROM vedioLink WHERE ALARM_NUM = %1").arg(alarmId));
@@ -304,13 +309,19 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
                 QString file = QDateTime::currentDateTime().toString("yyyy-MM-dd_hhmmss.zzz") + ".mp4";
                 QString fileName = fileDir + "/" + file;
                 QString *pFileName = new QString(fileName);
-                LLONG PlayHandle = cameroNet->recordVedio(&imf,query.value(1).toInt(),pFileName,areaMap->getScreen());
+                Screen *screen = areaMap->getScreen();
+                LLONG PlayHandle = cameroNet->recordVedio(&imf,query.value(1).toInt(),pFileName,screen);
                 if(PlayHandle >= 0)//打开成功
                 {
                     imf.playId = PlayHandle;
-                    areaMap->getScreen()->bindDevice(&imf);
-                    areaMap->getScreen()->show();
-                    areaMap->getScreen()->setGeometry(35,35,280,210);
+                    areaMap->updatePlayScreenMap(alarmId,screen);
+                    areaMap->areaMapChanged(alarmId);
+                    QPoint pos = areaMap->getPosByNum(alarmId);
+                    screen->bindDevice(&imf);
+                    screen->setGeometry(pos.x() + 35,pos.y(),280,210);
+                    screen->setPlayState(Screen::PLAY);
+                    screen->show();
+                    //根剧这个判断防区对应的视频是否正在播放或者录像
                     myTimer *timer = new myTimer(PlayHandle,this);
                     connect(timer,SIGNAL(timeOut(LONG)),this,SLOT(stopRecord(LONG)));
                     timer->start(30000);

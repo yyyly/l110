@@ -55,6 +55,10 @@ class AreaMap : public QWidget
 public:
     explicit AreaMap(QWidget *parent = 0);
     Screen * getScreen(){return screenPools->getSceen();}
+    QPoint getPosByNum(int num);
+    CustomView *getView(){return  view;}
+    void updatePlayScreenMap(int key,Screen *s);
+    Screen *getPreScreen(){return  preScreen;}
 private:
     MapScence *scence;
     CustomView *view;

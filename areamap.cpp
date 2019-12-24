@@ -180,11 +180,11 @@ void AreaMap::CloseScreen()
     //currentPlayNum = -1;
     Screen *s = qobject_cast<Screen *>(sender());
     s->setPlayState(Screen::UNPLAY);
+    CameraDeviceImf *imf = s->getCameraDeviceImf();
+    CameroNet *cameroNet = CameroNet::getInstance();
+    cameroNet->stopPlay(*imf,s);
     int t = playScreenMap.key(s);
     playScreenMap.remove(t);
-    CameraDeviceImf *imf = getScreen()->getCameraDeviceImf();
-    CameroNet *cameroNet = CameroNet::getInstance();
-    cameroNet->stopPlay(*imf,getScreen());
 }
 
 
@@ -236,7 +236,40 @@ void AreaMap::updateAreaMap(AreaMapOption *option)
     }
 }
 
-void AreaMap::alarmNumChecked(int num)
+QPoint AreaMap::getPosByNum(int num)
+{
+    AreaMapOption mapOption;
+    AreaOption option;
+    bool sign = false;
+    int i = 0;
+    int j = 0;
+    foreach (mapOption, areaMapOptionList) {
+        j = 0;
+        foreach (option, mapOption.areaList) {
+            j++;
+           if(option.num == num)
+           {
+               sign = true;
+               break;
+           }
+        }
+        if(sign)
+        {
+            break;
+        }
+        i++;
+    }
+    if(i == areaMapOptionList.count() && j == mapOption.areaList.count())
+    {
+        return  QPoint();
+    }
+    dockWidget->tabList->setCurrentRow(i);
+    view->centerOn(option.pos);
+    return  view->mapFromScene(option.pos);
+}
+
+
+void AreaMap::alarmNumChecked(int num)//播放视频
 {
     CameroNet *cameroNet = CameroNet::getInstance();
     bar->hide();
@@ -281,6 +314,7 @@ void AreaMap::alarmNumChecked(int num)
     {
         if(s == preScreen)
         {
+            s->show();
             return;
         }
         preScreen->hide();
@@ -335,8 +369,12 @@ void AreaMap::alarmNumChecked(int num)
         bar->showMessage("未绑定视频",3000);
         return;
     }
+}
 
-
+void AreaMap::updatePlayScreenMap(int key, Screen *s)
+{
+    preScreen = s;
+    playScreenMap.insert(key,s);
 }
 
 void AreaMap::closeChannal()
