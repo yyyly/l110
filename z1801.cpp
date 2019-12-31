@@ -90,6 +90,12 @@ void Z1801::checkData(QByteArray *alarmImfor)
             sendCmd(cmd);
             //status = DeviceStatus::Logined;
             result["messingType"] = MessingType::HeartBeat;
+            if(status == DeviceStatus::DisLogin)
+            {
+                status = DeviceStatus::Logined;
+                emit deviceLogin();
+                timer.start(800);
+            }
             return;
         }
         parse(alarmImfor);

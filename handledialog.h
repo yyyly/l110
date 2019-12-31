@@ -16,6 +16,9 @@ public:
     ~HandleDialog();
     void setData(QString p1 = QString(),QString ph1 = QString(),QString p2= QString(),QString ph2= QString());
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
     Ui::HandleDialog *ui;
     QString people1;

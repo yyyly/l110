@@ -22,6 +22,10 @@ public:
 private slots:
     void on_submitButton_clicked();
 
+    void on_modeComboBox_currentIndexChanged(int index);
+
+    void on_typeComboBox_currentIndexChanged(int index);
+
 private:
     Ui::DeviceForm *ui;
     int num;

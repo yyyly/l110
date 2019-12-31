@@ -33,12 +33,7 @@ EditWidget::EditWidget(QWidget *parent, QString name)
 
 }
 
-void CustomView::drawBackground(QPainter *painter, const QRectF &rect)
-{
-    QRectF sRect = this->scene()->sceneRect();
-    painter->setBrushOrigin(0, 0);
-    painter->fillRect(sRect, scene()->backgroundBrush());
-}
+
 
 void CustomView::mousePressEvent(QMouseEvent *event)
 {
@@ -46,6 +41,28 @@ void CustomView::mousePressEvent(QMouseEvent *event)
     //QPointF pos1 = mapToScene(pos);
     //qDebug() << pos1 << endl;
     QGraphicsView::mousePressEvent(event);
+}
+
+void CustomView::mouseReleaseEvent(QMouseEvent *e)
+{
+   QGraphicsView::mouseReleaseEvent(e);
+}
+
+void CustomView::showEvent(QShowEvent *event)
+{
+    QGraphicsView::showEvent(event);
+}
+
+bool CustomView::viewportEvent(QEvent *event)
+{
+    QGraphicsView::viewportEvent(event);
+    return false;
+}
+
+void CustomView::wheelEvent(QWheelEvent *event)
+{
+    //scale(0.75,0.75);
+    event->accept();
 }
 
 QSize CustomView::sizeHint() const

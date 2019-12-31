@@ -29,9 +29,11 @@ DataEntryDialog::DataEntryDialog(QWidget *parent) :
     alarmModel.setHeaderData(4,Qt::Horizontal,"负责热2姓名",Qt::DisplayRole);
     alarmModel.setHeaderData(5,Qt::Horizontal,"负责人2电话",Qt::DisplayRole);
     alarmModel.setHeaderData(6,Qt::Horizontal,"防区类型",Qt::DisplayRole);
+    alarmModel.setHeaderData(8,Qt::Horizontal,"防区类型",Qt::DisplayRole);
     alarmModel.select();
     ui->alarmTableView->setModel(&alarmModel);
     ui->alarmTableView->verticalHeader()->setVisible(false);
+    ui->alarmTableView->setColumnHidden(6,true);
     ui->alarmTableView->setColumnHidden(7,true);
     ui->alarmTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
 }

@@ -54,11 +54,12 @@ class AreaMap : public QWidget
     Q_OBJECT
 public:
     explicit AreaMap(QWidget *parent = 0);
-    Screen * getScreen(){return screenPools->getSceen();}
+    Screen * getScreen();
     QPoint getPosByNum(int num);
     CustomView *getView(){return  view;}
-    void updatePlayScreenMap(int key,Screen *s);
+    void updatePlayScreenMap(int key,Screen *s,bool add = true);
     Screen *getPreScreen(){return  preScreen;}
+    Screen *getScreenByNum(int num);
 private:
     MapScence *scence;
     CustomView *view;
@@ -73,6 +74,7 @@ private:
     QList<int> noBindList;
     Screen *preScreen;
     QMap<int,Screen*> playScreenMap;
+    bool mouseIsPressed;
     //int currentPlayNum;//目前正在播放的防区，初始值为-1,表示没有正在播放的防区
 signals:
 
@@ -86,6 +88,7 @@ public slots:
     void deleteArea_clicked();
     void updateAreaMap(AreaMapOption *option);
     void CloseScreen();
+    void stopPlayScreen();
 protected:
     void resizeEvent(QResizeEvent *event);
 };

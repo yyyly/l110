@@ -91,7 +91,11 @@ RuleWidget::RuleWidget(QWidget *parent) :
 RuleWidget::~RuleWidget()
 {
     delete ui;
-
+    if(soundPlayer)
+    {
+        soundPlayer->stop();
+        delete soundPlayer;
+    }
 }
 
 void RuleWidget::paintEvent(QPaintEvent *event)
@@ -178,7 +182,7 @@ void RuleWidget::playSound()
     if(soundPlayer == nullptr)
         return;
     soundPlayer->stop();
-    soundPlayer->~QSound();
+    delete soundPlayer;
     int n = ui->spinBox->value();
     QString str = ui->addressEdit->text();
     QString adr = path + "/voice/" + str;
@@ -228,6 +232,10 @@ void RuleWidget::applyButtonClicked()
 void RuleWidget::closeButtonClicked()
 {
     this->close();
+    if(soundPlayer)
+    {
+        soundPlayer->stop();
+    }
 }
 
 QMap<QString,Ruler> RuleWidget::getRulers()

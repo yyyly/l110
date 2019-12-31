@@ -16,7 +16,8 @@ enum
     PERSON_2_NAME = 4,
     PERSON_2_PHONE = 5,
     ALARM_TYPE = 6,
-    ON_SCENCE = 7
+    ON_SCENCE = 7,
+    ALARM_TYPE_DES = 8
 };
 
 enum FORM_TYPE

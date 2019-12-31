@@ -69,7 +69,10 @@ MessageRecord::MessageRecord(QWidget *parent)
     messageView->view->setItemDelegateForColumn(VEDIO_PATH,delege);
     messageView->view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     messageView->view->setSelectionBehavior(QAbstractItemView::SelectRows);
+    messageView->view->setColumnWidth(ZONE_NUM,60);
+    messageView->view->setColumnWidth(ZONE_NAME,160);
     messageView->view->verticalHeader()->setDefaultSectionSize(40);
+    messageView->view->horizontalHeader()->setStretchLastSection(true);
     //messageView->view->horizontalHeader()->swapSections(VEDIO_PATH,IS_HANDLE);
     QVBoxLayout *vLayout = new QVBoxLayout;
     vLayout->setMargin(0);

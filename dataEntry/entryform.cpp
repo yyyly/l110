@@ -96,6 +96,7 @@ void EntryForm::on_pushButton_clicked()
             int alarm_type = alarmTypeList.at(ui->typeComboBox->currentIndex());
             modle->setData(modle->index(crow,ALARM_TYPE),alarm_type);
             modle->setData(modle->index(crow,ON_SCENCE),0);
+            modle->setData(modle->index(crow,ALARM_TYPE_DES),ui->typeComboBox->currentText());
             modle->submit();
         }
         modle->select();
@@ -110,6 +111,7 @@ void EntryForm::on_pushButton_clicked()
         {
             int alarm_type = alarmTypeList.at(ui->typeComboBox->currentIndex());
             modle->setData(modle->index(row,ALARM_TYPE),alarm_type);
+            modle->setData(modle->index(row,ALARM_TYPE_DES),ui->typeComboBox->currentText());
             modle->submit();
         }
         modle->select();

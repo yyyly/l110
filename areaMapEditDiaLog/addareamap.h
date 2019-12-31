@@ -44,13 +44,16 @@ public:
 class CustomView : public QGraphicsView
 {
 public:
-    CustomView(QWidget *parent = 0):
+    CustomView(QWidget *parent = nullptr):
         QGraphicsView(parent)
     {}
 protected:
-    void drawBackground(QPainter *painter,const QRectF &rect);
     void mousePressEvent(QMouseEvent *event);
-
+    void mouseReleaseEvent(QMouseEvent *e);
+    void showEvent(QShowEvent *event);
+    bool viewportEvent(QEvent *event);
+    void wheelEvent(QWheelEvent *event);
+    //void drawBackground(QPainter *painter, const QRectF &rect);
 
 
     QSize sizeHint() const;

@@ -1,5 +1,6 @@
 #include "screenpools.h"
 #include "screen.h"
+const int addsize = 2;
 
 ScreenPools::ScreenPools(QWidget *parent)
     :parentWidget(parent)
@@ -10,8 +11,11 @@ ScreenPools::ScreenPools(QWidget *parent)
     foreach (s, screenVec) {
         s = new Screen(0,parentWidget);
         s->flag = 1;
+        s->hide();
         screenVec[i++] = s;
+        parent->installEventFilter(s);
     }
+
 }
 ScreenPools::~ScreenPools()
 {
@@ -37,17 +41,13 @@ Screen *ScreenPools::getSceen()
     if(s->getPlayState() == Screen::PLAY)//说明已有的都处于播放状态，需要加大内存
     {
           int size = screenVec.size();
-          screenVec.resize(size + 2);
-          for(auto it = screenVec.end();it > screenVec.begin();it--)
+          screenVec.resize(size + addsize);
+          for(int i = 0;i < addsize;i++)
           {
-              if(*it != nullptr)
-              {
-                  return  *(it++);
-              }
-              else
-              {
-                  *it = new Screen(0);
-              }
+              s = new Screen(0,parentWidget);
+              s->hide();
+              s->flag = 1;
+              screenVec[size + i] = s;
           }
     }
     else

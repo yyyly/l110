@@ -16,6 +16,7 @@ DeviceSetWidget::DeviceSetWidget(QWidget *parent,Z1801 *z) :
     replayNum(0)
 {
     ui->setupUi(this);
+    ui->tabWidget->setCurrentIndex(0);
     ui->busComboBox->hide();
     ui->wireLessComboBox->hide();
     ui->wireRadioButton->setChecked(true);

@@ -20,7 +20,8 @@ AreaMap::AreaMap(QWidget *parent)
       screenPools(new ScreenPools(view)),
       bar(new CStatuBar(view)),
       playId(-1),
-      preScreen(nullptr)
+      preScreen(nullptr),
+      mouseIsPressed(false)
 {
     setAutoFillBackground(true);
     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
@@ -28,10 +29,11 @@ AreaMap::AreaMap(QWidget *parent)
     view->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     view->setStyleSheet("border:none");
     //scence->setSceneRect(0,0,1024,960);
-    view->setScene(scence);
     view->setDragMode(QGraphicsView::ScrollHandDrag);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //view->setCacheMode(QGraphicsView::CacheBackground);
+    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     dockWidget->setStyleSheet("border:none");
     dockWidget->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     dockWidget->setMinimumWidth(150);
@@ -41,6 +43,7 @@ AreaMap::AreaMap(QWidget *parent)
     QList<int> list;
     list << 1000 << 150;
     splitter->setSizes(list);
+    splitter->setCollapsible(1,false);
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->setMargin(0);
     hlayout->setSpacing(0);
@@ -72,9 +75,11 @@ AreaMap::AreaMap(QWidget *parent)
     }
 
     option = areaMapOptionList.value(0);
-    QImage image(option.backIamgePath);
-    scence->setSceneRect(0,0,image.width(),image.height());
-    scence->setBackgroundBrush(QBrush(image));
+    QImage image =  QImage(option.backIamgePath);
+    scence->setSceneRect(0,0,image.width() + 400,image.height() + 400);
+    scence->setBackImage(image);
+    view->setScene(scence);
+    view->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     view->centerOn(image.width()/2,image.height()/2);
     AreaOption area;
     foreach (area, option.areaList) {
@@ -93,10 +98,6 @@ AreaMap::AreaMap(QWidget *parent)
     connect(dockWidget->editButton,SIGNAL(clicked(bool)),this,SLOT(editArea_Clicked()));
     connect(dockWidget->deleteButton,SIGNAL(clicked(bool)),this,SLOT(deleteArea_clicked()));
     //connect(screen,SIGNAL(cameraHide()),this,SLOT(CloseScreen()));
-    Screen *screen;
-    foreach (screen, screenPools->getScreenVec()) {
-        connect(screen,SIGNAL(cameraHide()),this,SLOT(CloseScreen()));
-    }
 
 }
 
@@ -187,6 +188,29 @@ void AreaMap::CloseScreen()
     playScreenMap.remove(t);
 }
 
+void AreaMap::stopPlayScreen()
+{
+    Screen *s = qobject_cast<Screen *>(sender());
+    CameroNet *cameroNet = CameroNet::getInstance();
+    if(s->isVisible())//说明是录像，但是处于界面显示状态，此时先关掉预览，然后再次打开
+    {
+        CameraDeviceImf *imf = s->getCameraDeviceImf();
+        if(cameroNet->stopPlay(*imf,s) == 0)
+        {
+            cameroNet->realPlay(imf,s->getChannel(),*s);
+        }
+
+    }
+    else
+    {
+        s->setPlayState(Screen::UNPLAY);
+        CameraDeviceImf *imf = s->getCameraDeviceImf();
+        cameroNet->stopPlay(*imf,s);
+        int t = playScreenMap.key(s);
+        playScreenMap.remove(t);
+    }
+}
+
 
 void AreaMap::resizeEvent(QResizeEvent *event)
 {
@@ -205,6 +229,10 @@ void AreaMap::newAreaMap(AreaMapOption option)
 
 void AreaMap::areaMapChanged(int n)
 {
+    if(preScreen)
+    {
+        preScreen->hide();
+    }
     AreaMapOption option = areaMapOptionList.value(n);
     updateAreaMap(&option);
 }
@@ -215,8 +243,9 @@ void AreaMap::updateAreaMap(AreaMapOption *option)
     //screen->hide();
     bar->hide();
     AreaOption area;
-    QImage image(option->backIamgePath);
-    scence->setSceneRect(0,0,image.width(),image.height());
+    QImage image =  QImage(option->backIamgePath);
+    scence->setBackImage(image);
+    scence->setSceneRect(0,0,image.width() + 400,image.height() + 400);
     scence->setBackgroundBrush(QBrush(image));
     view->centerOn(image.width()/2,image.height()/2);
     foreach (area, option->areaList) {
@@ -234,6 +263,7 @@ void AreaMap::updateAreaMap(AreaMapOption *option)
 
         }*/
     }
+    view->update();
 }
 
 QPoint AreaMap::getPosByNum(int num)
@@ -264,12 +294,23 @@ QPoint AreaMap::getPosByNum(int num)
         return  QPoint();
     }
     dockWidget->tabList->setCurrentRow(i);
+    areaMapChanged(i);
     view->centerOn(option.pos);
     return  view->mapFromScene(option.pos);
 }
 
+Screen* AreaMap::getScreen()
+{
+    Screen* s = screenPools->getSceen();
+    disconnect(s,SIGNAL(cameraHide()),this,SLOT(CloseScreen()));
+    disconnect(s,&Screen::stopPlay,this,&AreaMap::stopPlayScreen);
+    connect(s,SIGNAL(cameraHide()),this,SLOT(CloseScreen()));
+    connect(s,&Screen::stopPlay,this,&AreaMap::stopPlayScreen);
+    return  s;
+}
 
-void AreaMap::alarmNumChecked(int num)//播放视频
+
+void AreaMap::alarmNumChecked(int num)
 {
     CameroNet *cameroNet = CameroNet::getInstance();
     bar->hide();
@@ -314,6 +355,8 @@ void AreaMap::alarmNumChecked(int num)//播放视频
     {
         if(s == preScreen)
         {
+            QPoint pos = view->mapFromScene(option.pos);
+            s->setGeometry(pos.x()+35,pos.y(),280,210);
             s->show();
             return;
         }
@@ -348,9 +391,6 @@ void AreaMap::alarmNumChecked(int num)//播放视频
             playId = cameroNet->realPlay(&imf,1,*screen);
         }
         else {
-            //如果上一次通道有成功播放，需要先停止播放。
-            //CameroNet *cameroNet = CameroNet::getInstance();
-            //cameroNet->stopPlay(playId);
             if(preScreen != nullptr)
             {
                 preScreen->hide();
@@ -371,10 +411,23 @@ void AreaMap::alarmNumChecked(int num)//播放视频
     }
 }
 
-void AreaMap::updatePlayScreenMap(int key, Screen *s)
+void AreaMap::updatePlayScreenMap(int key, Screen *s, bool add)
 {
-    preScreen = s;
-    playScreenMap.insert(key,s);
+    if(add)
+    {
+        preScreen = s;
+        playScreenMap.insert(key,s);
+    }
+    else
+    {
+        preScreen = nullptr;
+        playScreenMap.remove(key);
+    }
+}
+
+Screen* AreaMap::getScreenByNum(int num)
+{
+    return  playScreenMap.value(num);
 }
 
 void AreaMap::closeChannal()

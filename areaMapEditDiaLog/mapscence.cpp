@@ -11,7 +11,8 @@
 
 
 MapScence::MapScence(QObject *parent)
-    :QGraphicsScene(parent)
+    :QGraphicsScene(parent),
+      bgImage(nullptr)
 {
 
 }
@@ -24,9 +25,37 @@ MapScence::MapScence(qreal x, qreal y, qreal width, qreal height, QObject *paren
 
 }
 
+MapScence::~MapScence()
+{
+    if(bgImage)
+    {
+        delete bgImage;
+    }
+}
+void MapScence::setBackImage(const QImage &image)
+{
+    if(bgImage)
+    {
+        delete bgImage;
+    }
+    bgImage = new QImage(image);
+}
+
 void MapScence::mousePressEvent(QMouseEvent *event)
 {
 
+}
+
+void MapScence::drawBackground(QPainter *painter, const QRectF &rect)
+{
+   if(bgImage)
+   {
+       painter->drawImage(0,0,*bgImage);
+   }
+   else
+   {
+       QGraphicsScene::drawBackground(painter,rect);
+   }
 }
 
 void MapScence::dragEnterEvent(QGraphicsSceneDragDropEvent *event)

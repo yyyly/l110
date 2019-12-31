@@ -53,6 +53,7 @@ DeviceForm::DeviceForm(QWidget *parent,DeviceImforSqlTableModel *m,int n) :
         model->setData(model->index(row,MODE),-1);
         model->setData(model->index(row,TYPE),-1);
         mapper->setCurrentIndex(row);
+        ui->portSpinBox->setRange(2,128);
     }
     else {
         mapper->setCurrentIndex(num);
@@ -136,5 +137,41 @@ void DeviceForm::on_submitButton_clicked()
     if(it == deviceImf.end())
     {
         treeModle->addItem(imf);
+    }
+}
+
+void DeviceForm::on_modeComboBox_currentIndexChanged(int index)
+{
+    switch (index) {
+    case 0:
+    {
+        ui->portSpinBox->setValue(8000);
+    }
+        break;
+    case 1:
+    {
+        ui->portSpinBox->setValue(37777);
+    }
+        break;
+    default:
+        break;
+    }
+}
+
+void DeviceForm::on_typeComboBox_currentIndexChanged(int index)
+{
+    switch (index) {
+    case 0:
+    {
+        ui->channalCountSpinBox->setRange(2,128);
+    }
+        break;
+    case 1:
+    {
+        ui->channalCountSpinBox->setRange(1,1);
+    }
+        break;
+    default:
+        break;
     }
 }

@@ -12,6 +12,7 @@ public:
     ScreenPools(QWidget *parent);
     ~ScreenPools();
     Screen * getSceen();
+    int getPoolScreenNum(){return  screenVec.length();}
     QVector<Screen *> &getScreenVec(){return  screenVec;}
 private:
     QVector<Screen *> screenVec;

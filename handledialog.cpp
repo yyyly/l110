@@ -29,5 +29,10 @@ void HandleDialog::setData(QString p1, QString ph1, QString p2, QString ph2)
     }
     //ui->contactComboBox->addItem("电话未打通");
     ui->phoneLineEdit->setText(phone1);
+    ui->reMarklineEdit->setPlaceholderText("备注");
+}
+
+void HandleDialog::on_pushButton_clicked()
+{
 
 }

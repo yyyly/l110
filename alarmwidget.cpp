@@ -17,6 +17,7 @@
 #include<QDir>
 #include<QSound>
 #include<QStandardItemModel>
+#include<QScrollBar>
 #include"globdata.h"
 #include"z1801p.h"
 #include "bombScreen/bombscreen.h"
@@ -79,15 +80,16 @@ AlarmWidget::AlarmWidget(QWidget *parent)
     leftLayout->addWidget(devPanel);
     //leftLayout->addStretch();
     leftLayout->addWidget(statusBar);
-    imforView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
     imforView->setMinimumHeight(150);
+    imforView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::MinimumExpanding);
     //imforView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     QSplitter *rightSplitter = new QSplitter(Qt::Vertical);
     rightSplitter->addWidget(areaMap);
     rightSplitter->addWidget(imforView);
-    QList<int> list;
-    list << 2500 << 150;
-    rightSplitter->setSizes(list);
+    rightSplitter->setCollapsible(1,false);
+    QList<int> sizeList;
+    sizeList << 1750 << 150;
+    rightSplitter->setSizes(sizeList);
     QVBoxLayout *rVBoxlayout = new QVBoxLayout();
     rVBoxlayout->setMargin(0);
     rVBoxlayout->addWidget(rightSplitter);
@@ -297,8 +299,17 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
         if(query.next())
         {
             CameraDeviceImf  imf = deviceImf[query.value(0).toInt()];
+            CameroNet *cameroNet = CameroNet::getInstance();
             if(imf.luserId != -1)
             {
+                //先判断防区关联的视频有没有在播放，如果在播放则先停止播放
+                Screen *playedScreen = areaMap->getScreenByNum(alarmId);
+                if(playedScreen)
+                {
+                    cameroNet->stopPlay(*playedScreen->getCameraDeviceImf(),playedScreen);
+                    playedScreen->setPlayState(Screen::UNPLAY);
+                    areaMap->updatePlayScreenMap(alarmId,playedScreen,false);
+                }
                 CameroNet *cameroNet = CameroNet::getInstance();
                 QString fileDir = G_VedioSaveAdd + "/" + alarmMessingMap.value(alarmId).name;
                 QDir *dir = new QDir();
@@ -315,16 +326,15 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
                 {
                     imf.playId = PlayHandle;
                     areaMap->updatePlayScreenMap(alarmId,screen);
-                    areaMap->areaMapChanged(alarmId);
                     QPoint pos = areaMap->getPosByNum(alarmId);
-                    screen->bindDevice(&imf);
                     screen->setGeometry(pos.x() + 35,pos.y(),280,210);
                     screen->setPlayState(Screen::PLAY);
                     screen->show();
                     //根剧这个判断防区对应的视频是否正在播放或者录像
-                    myTimer *timer = new myTimer(PlayHandle,this);
-                    connect(timer,SIGNAL(timeOut(LONG)),this,SLOT(stopRecord(LONG)));
-                    timer->start(30000);
+                    //myTimer *timer = new myTimer(PlayHandle,this);
+                    //connect(timer,SIGNAL(timeOut(LONG)),this,SLOT(stopRecord(LONG)));
+                    //timer->start(30000);
+                    screen->startCountDown(30000);
                     QString file = QString("%1").arg(imf.mold) + fileName;
                     model->setData(model->index(row,VEDIO_PATH),file);
 
@@ -369,6 +379,7 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
     model->submitAll();
     model->setFilter("IS_HANDLE != 1 OR IS_HANDLE IS null");
     model->select();
+    imforView->verticalScrollBar()->setSliderPosition(0);
 }
 
 void AlarmWidget::updatePartImfor(const PartImf &imf)
@@ -435,6 +446,7 @@ void AlarmWidget::stopRecord(LONG handle)
 {
     CameroNet *cameroNet = CameroNet::getInstance();
     cameroNet->stopPlay(handle);
+
 }
 
 void AlarmWidget::alarmNumFromView(QModelIndex index)
