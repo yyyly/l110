@@ -16,18 +16,17 @@ SystemEditDialog::SystemEditDialog(QWidget *parent) :
     ui->setupUi(this);
     ui->tabWidget->setTabPosition(QTabWidget::West);
     ui->tabWidget->tabBar()->setStyle(new CustomTabWidgetStyle);
+    ui->portSpinBox->setRange(1,65543);
+    ui->recordTimeSpinBox->setRange(1,5000);
+    on_tabWidget_currentChanged(0);
     //ui->tabWidget->tabBar()->setTabEnabled(0,false);
     ui->widget->installEventFilter(this);
     ui->closeButton->setButtonStyle(":/image/toolbar_close.png",4);
-    QSettings settings("settings.ini",QSettings::IniFormat);
-    settings.beginGroup("SAVE DIR");
-    ui->vedioDirEdit->setText(settings.value("vedioSaveDir").toString());
-    ui->imageDirEdit->setText(settings.value("imageSaveDir").toString());
-    G_PicSaveAdd = settings.value("imageSaveDir").toString();
-    G_VedioSaveAdd = settings.value("vedioSaveDir").toString();
-    settings.endGroup();
     defPicSaveDir = "D:/Pictures";
     defVedioSaveDir = "D:/Pictures";
+    defListenPort = 9050;
+    defStream = 0;
+    defRecordTime = 30;
     connect(ui->imageDirButton,SIGNAL(clicked()),this,SLOT(setImageSaveDir()));
     connect(ui->vedioDirButton,SIGNAL(clicked()),this,SLOT(setVedioSaveDir()));
     connect(ui->closeButton,SIGNAL(clicked()),this,SLOT(closeButtonClicked()));
@@ -138,4 +137,63 @@ void SystemEditDialog::on_dirDefaultButton_clicked()
 {
     ui->imageDirEdit->setText(defPicSaveDir);
     ui->vedioDirEdit->setText(defVedioSaveDir);
+    G_PicSaveAdd = defPicSaveDir;
+    G_VedioSaveAdd = defVedioSaveDir;
+    on_dirSaveButton_clicked();
+}
+
+void SystemEditDialog::on_tabWidget_currentChanged(int index)
+{
+    //初始化每个table的值
+    switch (index) {
+    case 0:
+    {
+        QSettings settings("settings.ini",QSettings::IniFormat);
+        settings.beginGroup("SYS_EDIT");
+        ui->portSpinBox->setValue(settings.value("listenPort").toInt());
+        ui->recordTimeSpinBox->setValue(settings.value("recordTime").toInt());
+        ui->sreamComboBox->setCurrentIndex(settings.value("stream").toInt());
+        //G_PicSaveAdd = settings.value("imageSaveDir").toString();
+        //G_VedioSaveAdd = settings.value("vedioSaveDir").toString();
+        settings.endGroup();
+    }
+        break;
+    case 1:
+    {
+        QSettings settings("settings.ini",QSettings::IniFormat);
+        settings.beginGroup("SAVE DIR");
+        ui->vedioDirEdit->setText(settings.value("vedioSaveDir").toString());
+        ui->imageDirEdit->setText(settings.value("imageSaveDir").toString());
+        G_PicSaveAdd = settings.value("imageSaveDir").toString();
+        G_VedioSaveAdd = settings.value("vedioSaveDir").toString();
+        settings.endGroup();
+    }
+        break;
+    default:
+        break;
+    }
+}
+
+void SystemEditDialog::on_systemSavePushButton_clicked()
+{
+    QSettings settings("settings.ini",QSettings::IniFormat);
+    settings.beginGroup("SYS_EDIT");
+    settings.setValue("listenPort",ui->portSpinBox->value());
+    settings.setValue("recordTime",ui->recordTimeSpinBox->value());
+    settings.setValue("stream",ui->sreamComboBox->currentIndex());
+    settings.endGroup();
+    G_Port = ui->portSpinBox->value();
+    G_RecordTime = ui->recordTimeSpinBox->value();
+    G_Stream  = ui->sreamComboBox->currentIndex();
+}
+
+void SystemEditDialog::on_systemDefaultpushButton_clicked()
+{
+    ui->portSpinBox->setValue(defListenPort);
+    ui->recordTimeSpinBox->setValue(defRecordTime);
+    ui->sreamComboBox->setCurrentIndex(defStream);
+    G_Port = defListenPort;
+    G_RecordTime = defRecordTime;
+    G_Stream = defStream;
+    on_systemSavePushButton_clicked();
 }

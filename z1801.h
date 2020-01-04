@@ -11,7 +11,7 @@
 
 #include"devicemodel/imforparse.h"
 
-#define l110Port quint16
+#define l110Port int
 #define Byte quint8
 
 struct AlarmMessing{

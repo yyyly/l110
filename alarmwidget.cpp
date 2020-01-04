@@ -172,6 +172,7 @@ AlarmWidget::AlarmWidget(QWidget *parent)
     connect(this,SIGNAL(alarmNumCheck(int)),areaMap,SLOT(alarmNumChecked(int)));
     connect(controWidget,SIGNAL(stateChange(int)),this,SLOT(messingFilter(int)));
     connect(controWidget,SIGNAL(handleHappened()),areaMap,SLOT(closeChannal()));
+    connect(dataEntryDialog,&DataEntryDialog::deleNumList,areaMap,&AreaMap::deleOptionbyNumList);
     //BombScreen *screen = new BombScreen(,this);
 
     //screen->show();
@@ -334,7 +335,7 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
                     //myTimer *timer = new myTimer(PlayHandle,this);
                     //connect(timer,SIGNAL(timeOut(LONG)),this,SLOT(stopRecord(LONG)));
                     //timer->start(30000);
-                    screen->startCountDown(30000);
+                    screen->startCountDown(G_RecordTime * 1000);
                     QString file = QString("%1").arg(imf.mold) + fileName;
                     model->setData(model->index(row,VEDIO_PATH),file);
 

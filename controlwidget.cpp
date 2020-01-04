@@ -101,7 +101,31 @@ void ControlWidget::on_handalPushButton_clicked()
     QString ph2 = record.value(CHARG2_PHONE).toString();
     HandleDialog dialog;
     dialog.setData(p1,ph1,p2,ph2);
-    dialog.exec();
+    if(dialog.exec() == QDialog::Accepted)
+    {
+        HandleDialogData *data = dialog.getdata();
+        if(data)
+        {
+            model->setData(model->index(index.row(),IS_HANDLE),1);
+            model->setData(model->index(index.row(),NOTICE_PERSON),data->contackPeople);
+            model->setData(model->index(index.row(),NOTICE_PHONE),data->contackPhone);
+            model->setData(model->index(index.row(),HANDLE_OPINION),data->alarmTypeString);
+            model->submit();
+        }
+        if(state == 0)
+        {
+           model->setFilter("(IS_HANDLE != 1 OR IS_HANDLE IS null) AND ALARM_CLASS == 0");
+        }
+        else if(state ==1)
+        {
+           model->setFilter("(IS_HANDLE != 1 OR IS_HANDLE IS null) AND ALARM_CLASS == 1");
+        }
+        else {
+            model->setFilter("IS_HANDLE != 1 OR IS_HANDLE IS null");
+        }
+
+        model->select();
+    }
 }
 
 void ControlWidget::on_fastHandlePushButton_clicked()

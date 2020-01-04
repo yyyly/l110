@@ -25,6 +25,7 @@ void initGlobData();
 #include "preview/sqldata.h"
 #include "singleapplication.h"
 #include "logwidget.h"
+#include "globaloption.h"
 #include<QSplashScreen>
 #include <QMetaType>
 
@@ -53,6 +54,15 @@ int main(int argc, char *argv[])
     int isCheck = settings.value("IS_SAVED").toInt();
     QString account = settings.value("ACCOUNT").toString();
     QString password = settings.value("PASSWARD").toString();
+    settings.endGroup();
+    settings.beginGroup("SAVE DIR");
+    G_PicSaveAdd = settings.value("imageSaveDir").toString();
+    G_VedioSaveAdd = settings.value("vedioSaveDir").toString();
+    settings.endGroup();
+    settings.beginGroup("SYS_EDIT");
+    G_Port = settings.value("listenPort").toInt();
+    G_RecordTime = settings.value("recordTime").toInt();
+    G_Stream = settings.value("stream").toInt();
     settings.endGroup();
     logWidget *log = new logWidget;
     if(isCheck == 1)

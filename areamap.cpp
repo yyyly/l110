@@ -211,6 +211,31 @@ void AreaMap::stopPlayScreen()
     }
 }
 
+void AreaMap::deleOptionbyNumList(const QList<int> deleNumList)
+{
+    int num;
+    bool find = false;
+    foreach (num, deleNumList) {
+        for(auto i = areaMapOptionList.begin();i != areaMapOptionList.end();i++)
+        {
+            for(auto j = i->areaList.begin();j != i->areaList.end();j++)
+            {
+                if(j->num == num)
+                {
+                    i->areaList.removeOne(*j);
+                    find = true;
+                    break;
+                }
+            }
+            if(find)
+            {
+                break;
+            }
+        }
+    }
+    int i = dockWidget->currentTabIndex();
+    areaMapChanged(i);
+}
 
 void AreaMap::resizeEvent(QResizeEvent *event)
 {
@@ -362,6 +387,8 @@ void AreaMap::alarmNumChecked(int num)
         }
         preScreen->hide();
         preScreen = s;
+        QPoint pos = view->mapFromScene(option.pos);
+        s->setGeometry(pos.x()+35,pos.y(),280,210);
         s->show();
         return;
     }
@@ -444,7 +471,8 @@ CDockWidget::CDockWidget(QWidget *parent)
       tabList(new QListWidget),
       addButton(new QPushButton),
       deleteButton(new QPushButton),
-      editButton(new QPushButton)
+      editButton(new QPushButton),
+      preRow(0)
       /*,
       vLabel(new QLabel),
       spreadButton(new QPushButton)*/
@@ -525,6 +553,7 @@ void CDockWidget::deleteTab(int row)
 
 void CDockWidget::itemChanged(int row)
 {
+    preRow = row;
     emit tabChanged(row);
 }
 

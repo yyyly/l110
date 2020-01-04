@@ -29,6 +29,7 @@ public:
     explicit CDockWidget(QWidget *parent = 0);
     void addTab(const QString &str);
     void deleteTab(int row);
+    int currentTabIndex(){return  preRow;}
 signals:
     void tabChanged(int index);
 public slots:
@@ -45,6 +46,8 @@ public:
 private slots:
     void itemChanged(int row);
     void draw();
+private:
+    int preRow;
 
 };
 
@@ -89,6 +92,7 @@ public slots:
     void updateAreaMap(AreaMapOption *option);
     void CloseScreen();
     void stopPlayScreen();
+    void deleOptionbyNumList(const QList<int> deleNumList);
 protected:
     void resizeEvent(QResizeEvent *event);
 };

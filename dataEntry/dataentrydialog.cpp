@@ -1,6 +1,8 @@
 #include "dataentrydialog.h"
 #include "ui_dataentrydialog.h"
 #include <QModelIndexList>
+#include <QSqlQuery>
+#include <QMessageBox>
 
 DataEntryDialog::DataEntryDialog(QWidget *parent) :
     QDialog(parent),
@@ -8,6 +10,17 @@ DataEntryDialog::DataEntryDialog(QWidget *parent) :
 
 {
     ui->setupUi(this);
+    setWindowTitle("信息录入");
+    deviceModel.setTable("alarmDeviceImf");
+    deviceModel.select();
+    mapper.setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
+    mapper.setModel(&deviceModel);
+    mapper.addMapping(ui->alarmDeviceNamelineEdit,0);
+    mapper.addMapping(ui->charge1lineEdit,1);
+    mapper.addMapping(ui->charg1PhoneEdit,2);
+    mapper.addMapping(ui->charge2lineEdit,3);
+    mapper.addMapping(ui->charg2PhoneEdit,4);
+    mapper.setCurrentIndex(0);
     partModel.setTable("partImfor");
     partModel.setSort(0,Qt::AscendingOrder);
     partModel.setHeaderData(0,Qt::Horizontal,"分区编号",Qt::DisplayRole);
@@ -87,10 +100,31 @@ void DataEntryDialog::on_alarmEditPushButton_clicked()
 
 void DataEntryDialog::on_alarmDelPushButton_clicked()
 {
+    QMessageBox msgBox;
+    msgBox.setText("确定删除防区信息");
+    msgBox.setStandardButtons(QMessageBox::Cancel | QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    int ret = msgBox.exec();
+    if(ret == QMessageBox::Cancel)
+    {
+        return;
+    }
+    QSqlQuery query;
     QModelIndexList indexList = ui->alarmTableView->selectionModel()->selectedRows();
     QModelIndex index;
+    int n;
+    QList<int> deleList;
     foreach (index, indexList) {
+        n = alarmModel.index(index.row(),0).data().toInt();
         alarmModel.removeRow(index.row());
+        query.exec(QString("DELETE FROM pointOnMap WHERE NUM = %1").arg(n));
+        deleList << n;
     }
+    emit deleNumList(deleList);
     alarmModel.select();
+}
+
+void DataEntryDialog::on_pushButton_clicked()
+{
+    mapper.submit();
 }

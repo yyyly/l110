@@ -6,11 +6,16 @@ HandleDialog::HandleDialog(QWidget *parent) :
     ui(new Ui::HandleDialog)
 {
     ui->setupUi(this);
+    ui->contactComboBox->setEditable(true);
 }
 
 HandleDialog::~HandleDialog()
 {
     delete ui;
+    if(data)
+    {
+        delete data;
+    }
 }
 
 void HandleDialog::setData(QString p1, QString ph1, QString p2, QString ph2)
@@ -34,5 +39,10 @@ void HandleDialog::setData(QString p1, QString ph1, QString p2, QString ph2)
 
 void HandleDialog::on_pushButton_clicked()
 {
-
+    data = new HandleDialogData();
+    data->contackPeople = ui->contactComboBox->lineEdit()->text();
+    data->contackPhone = ui->phoneLineEdit->text();
+    data->alarmTypeString = ui->comboBox->currentText();
+    data->remarks = ui->reMarklineEdit->text();
+    accept();
 }

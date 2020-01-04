@@ -1,4 +1,5 @@
 #include "z1801.h"
+#include "globaloption.h"
 #include<QDataStream>
 #include<QDebug>
 #include<QDateTime>
@@ -17,7 +18,7 @@
 
 Z1801::Z1801(QObject *parent) : QObject(parent)
 {
-    init(9050);
+    init(G_Port);
     initAsistArray();
     status = DeviceStatus::DisLogin;
     connect(&timer,SIGNAL(timeout()),this,SLOT(getDeviceImf()));
@@ -28,7 +29,7 @@ Z1801::~Z1801()
     server->close();
 }
 
-void Z1801::init(quint16 port)
+void Z1801::init(int port)
 {
     server = new QTcpServer(this);
     alarmImformation = new QByteArray;

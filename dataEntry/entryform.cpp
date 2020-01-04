@@ -14,6 +14,7 @@ EntryForm::EntryForm(QWidget *parent,QSqlTableModel *m,int n,FORM_TYPE t) :
     ui->setupUi(this);
     ui->typeLabel->hide();
     ui->typeComboBox->hide();
+    setWindowTitle("分区信息");
     setAttribute(Qt::WA_DeleteOnClose);
     initIdList();
     modle->select();
@@ -32,6 +33,7 @@ EntryForm::EntryForm(QWidget *parent,QSqlTableModel *m,int n,FORM_TYPE t) :
         ui->label_4->setText("防区名称");
         ui->typeLabel->show();
         ui->typeComboBox->show();
+        this->setWindowTitle("防区信息");
     }
 
     if(num == -1)//表示新添加记录
@@ -72,8 +74,16 @@ void EntryForm::on_numLineEdit_editingFinished()
     int id = ui->numLineEdit->text().toInt();
     if(idList.contains(id))
     {
-        ui->explainLabel->setText("分区已存在！");
-        ui->pushButton->setEnabled(false);
+        if(type == FORM_TYPE::ALARM_FORM)
+        {
+            ui->explainLabel->setText("防区已存在！");
+            ui->pushButton->setEnabled(false);
+        }
+        else
+        {
+            ui->explainLabel->setText("分区已存在！");
+            ui->pushButton->setEnabled(false);
+        }
     }
     else {
         ui->explainLabel->clear();

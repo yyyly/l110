@@ -32,8 +32,14 @@ private slots:
 
     void on_alarmDelPushButton_clicked();
 
+    void on_pushButton_clicked();
+signals:
+    void deleNumList(const QList<int> list);
+
 private:
     Ui::DataEntryDialog *ui;
+    QSqlTableModel deviceModel;
+    QDataWidgetMapper mapper;
     QSqlTableModel partModel;
     QSqlTableModel alarmModel;
 };

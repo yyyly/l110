@@ -30,6 +30,9 @@ private:
     bool mouseIsPress;
     QString defPicSaveDir = "";
     QString defVedioSaveDir = "";
+    int defListenPort;
+    int defRecordTime;
+    int defStream;
 protected:
     void paintEvent(QPaintEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);
@@ -37,6 +40,9 @@ private slots:
     void on_dirSaveButton_clicked();
     void on_dirDefaultButton_clicked();
 
+    void on_tabWidget_currentChanged(int index);
+    void on_systemSavePushButton_clicked();
+    void on_systemDefaultpushButton_clicked();
 };
 
 #endif // SYSTEMEDITDIALOG_H
