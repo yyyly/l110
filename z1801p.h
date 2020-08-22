@@ -100,4 +100,10 @@ enum ModuleType
     Z851A
 };
 
+enum MachineType
+{
+  KS_Z801A,
+  KS_500A
+};
+
 #endif // Z1801P_H

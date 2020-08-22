@@ -1,9 +1,6 @@
 #include "vediolinkconfigdialog.h"
 #include "ui_vediolinkconfigdialog.h"
 #include "globdata.h"
-
-
-
 #include <QStringListModel>
 #include <QSqlQuery>
 #include <QModelIndex>
@@ -13,6 +10,8 @@
 #include <QSqlRelationalDelegate>
 #include <QSqlRelation>
 #include <QMessageBox>
+#include <QMouseEvent>
+#include <QPainter>
 
 
 VedioLinkConfigDialog::VedioLinkConfigDialog(QWidget *parent) :
@@ -20,7 +19,9 @@ VedioLinkConfigDialog::VedioLinkConfigDialog(QWidget *parent) :
     ui(new Ui::VedioLinkConfigDialog)
 {
     ui->setupUi(this);
-    setWindowTitle("通道绑定");
+    setWindowFlags(Qt::FramelessWindowHint | windowFlags());
+    ui->widget->installEventFilter(this);
+    ui->closePushButton->setButtonStyle(":/image/toolbar_close.png",4);
     setFixedSize(800,450);
     w = new CTableWidget(this);
     QStringListModel modle;
@@ -84,6 +85,39 @@ VedioLinkConfigDialog::VedioLinkConfigDialog(QWidget *parent) :
 VedioLinkConfigDialog::~VedioLinkConfigDialog()
 {
     delete ui;
+}
+
+bool VedioLinkConfigDialog::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj == ui->widget && !this->isMaximized())
+    {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+        switch(mouseEvent->type())
+        {
+        case QEvent::MouseButtonPress:
+            {
+                if(mouseEvent->button() == Qt::LeftButton)
+                {
+                    mouseIsPress = true;
+                    mousePos = mouseEvent->pos();
+                }
+            }
+                break;
+        case QEvent::MouseMove:
+            {
+                move(mouseEvent->pos() - mousePos  + pos());
+            }
+                break;
+        case QEvent::MouseButtonRelease:
+            {
+                mouseIsPress = false;
+            }
+                break;
+        default:
+            break;
+        }
+    }
+    return false;
 }
 
 void VedioLinkConfigDialog::updateChannel()
@@ -205,4 +239,22 @@ void VedioLinkConfigDialog::on_deletePushButton_clicked()
     QSqlQuery query;
     query.exec(QString("DELETE  FROM vedioLink WHERE ALARM_NUM = %1").arg(alarmNum));
     updateLinkView();
+}
+
+void VedioLinkConfigDialog::on_closePushButton_clicked()
+{
+    reject();
+    close();
+}
+
+void VedioLinkConfigDialog::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+    p.setPen(QPen(Qt::black,2));
+    p.setRenderHint(QPainter::Antialiasing);
+    p.drawRoundedRect(1,1,width()-2,height()-2,0,0);
 }

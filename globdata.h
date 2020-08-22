@@ -13,4 +13,5 @@ extern int page_max_count_record;
 extern DeviceTreeMode *treeModle;
 extern QString glob_user;
 extern QString glob_nickName;
+extern MachineType mType;
 #endif // GLOBDATA_H

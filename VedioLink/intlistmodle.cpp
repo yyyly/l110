@@ -88,7 +88,7 @@ Qt::ItemFlags IntListModle::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
            return QAbstractItemModel::flags(index);
-    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     //flags |= Qt::ItemIsUserCheckable;
     return flags;
 }

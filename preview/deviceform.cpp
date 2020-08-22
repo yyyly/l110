@@ -53,7 +53,7 @@ DeviceForm::DeviceForm(QWidget *parent,DeviceImforSqlTableModel *m,int n) :
         model->setData(model->index(row,MODE),-1);
         model->setData(model->index(row,TYPE),-1);
         mapper->setCurrentIndex(row);
-        ui->portSpinBox->setRange(2,128);
+        ui->portSpinBox->setValue(8000);
     }
     else {
         mapper->setCurrentIndex(num);

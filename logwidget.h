@@ -14,13 +14,21 @@ class logWidget : public QDialog
 
 public:
     explicit logWidget(QWidget *parent = nullptr);
-    void update(bool isSaved,bool isAutoLog,QString account,QString passward);
+
     ~logWidget();
+
+    QString getAccont();
+
+    QString getPassword();
+
+    void update(bool isSaved,bool isAutoLog,QString account,QString passward);
 
 public slots:
     bool on_logButton_clicked();
 
     void on_closeButton_clicked();
+
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 

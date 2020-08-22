@@ -33,6 +33,8 @@ ControlWidget::ControlWidget(QWidget *parent) :
     model(nullptr)
 {
     ui->setupUi(this);
+    ui->handalPushButton->setObjectName("cButton");
+    ui->fastHandlePushButton->setObjectName("cButton");
 }
 
 ControlWidget::~ControlWidget()

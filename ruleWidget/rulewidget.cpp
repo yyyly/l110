@@ -17,6 +17,8 @@
 #include<QFileInfo>
 #include<QSqlRecord>
 #include<QByteArray>
+#include <QMediaPlayer>
+#include "globdata.h"
 
 
 enum{
@@ -25,13 +27,14 @@ enum{
     VOICE,
     VOICE_IS_PLAY,
     PLAY_TIMES,
-    ZONE_CODE
+    ZONE_CODE,
+    DEVICE
 };
 
 RuleWidget::RuleWidget(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::RuleWidget),
-    soundPlayer(new QSound("")),
+    soundPlayer(new SoundPlayer(this)),
     fielDialog(new QFileDialog(this))
 {
 
@@ -39,12 +42,14 @@ RuleWidget::RuleWidget(QWidget *parent) :
     path = qApp->applicationDirPath();
     this->setWindowFlags(Qt::FramelessWindowHint | windowFlags());
     model.setTable("ruler");
-    model.setSort(ZONE_TYPE,Qt::DescendingOrder);
+    model.setSort(DEVICE,Qt::DescendingOrder);
     model.setHeaderData(ZONE_TYPE,Qt::Horizontal,"警情类型");
     model.setHeaderData(GROUND_COLOR,Qt::Horizontal,"背景颜色");
     model.setHeaderData(VOICE,Qt::Horizontal,"提示音");
     model.setHeaderData(VOICE_IS_PLAY,Qt::Horizontal,"播放");
     model.setHeaderData(PLAY_TIMES,Qt::Horizontal,"次数");
+    mFilter = QString("device_type = %1").arg(mType);
+    model.setFilter(mFilter);
     model.select();
     ui->widget->installEventFilter(this);
     ui->tableView->installEventFilter(this);
@@ -55,6 +60,7 @@ RuleWidget::RuleWidget(QWidget *parent) :
     ui->tableView->setColumnWidth(3,40);
     ui->tableView->setColumnWidth(4,40);
     ui->tableView->setColumnHidden(ZONE_CODE,true);
+    ui->tableView->setColumnHidden(DEVICE,true);
     ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     int w = ui->tableView->width();
     for(int i = 0;i< ui->tableView->colorCount();i++)
@@ -138,6 +144,7 @@ bool RuleWidget::eventFilter(QObject *obj, QEvent *event)
                 mouseIsPress = false;
             }
                 break;
+        default:break;
         }
     }
     else if(obj == ui->tableView)
@@ -179,16 +186,13 @@ void RuleWidget::tableClicked(const QModelIndex &index)
 
 void RuleWidget::playSound()
 {
-    if(soundPlayer == nullptr)
-        return;
-    soundPlayer->stop();
-    delete soundPlayer;
-    int n = ui->spinBox->value();
+
     QString str = ui->addressEdit->text();
     QString adr = path + "/voice/" + str;
-    soundPlayer = new QSound(adr);
-    soundPlayer->setLoops(n);
-    soundPlayer->play();
+    int n = ui->spinBox->value();
+    soundPlayer->setVolume(50);
+    soundPlayer->stopPlay();
+    soundPlayer->playSound(adr,n);
 }
 
 void RuleWidget::colorEditClicked()
@@ -201,7 +205,8 @@ void RuleWidget::colorEditClicked()
 
 void RuleWidget::soundFileSelect()
 {
-    QString str = QFileDialog::getOpenFileName(this,"声音文件","./debug/voice/","sound files(*.wav)");
+    QString adr = path + "/voice/";
+    QString str = QFileDialog::getOpenFileName(this,"声音文件",QString("%1").arg(adr),"sound files(*.wav *.mp3)");
     if(str.isEmpty())
         return;
     QFileInfo info(str);
@@ -223,24 +228,25 @@ void RuleWidget::applyButtonClicked()
     record.setValue("VIOCE_IS_PLAY",ui->checkBox->isChecked() ? "是" : "否");
     record.setValue("PLAY_TIMES",ui->spinBox->value());
     model.setRecord(0,record);
-    model.setFilter("");
-    model.select();
     model.submitAll();
+    model.setFilter("mFilter");
+    model.select();
     emit rulerChange();
 }
 
 void RuleWidget::closeButtonClicked()
 {
-    this->close();
+
     if(soundPlayer)
     {
-        soundPlayer->stop();
+        soundPlayer->stopPlay();
     }
+    this->close();
 }
 
 QMap<QString,Ruler> RuleWidget::getRulers()
 {
-    model.setFilter("");
+    model.setFilter(mFilter);
     model.select();
     for(int i = 0;i< model.rowCount();i++)
     {
@@ -269,4 +275,18 @@ void RuleWidget::cancelButtonClicked()
 void RuleWidget::okButtonClicked()
 {
 
+}
+
+void RuleWidget::on_checkBox_stateChanged(int arg1)
+{
+    if(arg1 == 0)
+    {
+        ui->spinBox->setValue(0);
+        ui->spinBox->setEnabled(false);
+    }
+    else
+    {
+        ui->spinBox->setValue(1);
+        ui->spinBox->setEnabled(true);
+    }
 }

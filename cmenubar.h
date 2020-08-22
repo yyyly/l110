@@ -30,6 +30,7 @@ private:
     QLabel *nickNameLabel;
     QMenu* menu;
     QMenu *userMenu;
+    QAction* manageAccountAction;
 signals:
     void TableCliecked(int n);
     void toMaxSize();

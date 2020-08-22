@@ -6,7 +6,9 @@ HandleDialog::HandleDialog(QWidget *parent) :
     ui(new Ui::HandleDialog)
 {
     ui->setupUi(this);
+    this->setWindowTitle("警情处理");
     ui->contactComboBox->setEditable(true);
+    data = nullptr;
 }
 
 HandleDialog::~HandleDialog()

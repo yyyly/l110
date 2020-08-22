@@ -17,6 +17,12 @@ public:
 
 private:
     Ui::aboutDialog *ui;
+    QPoint mousePos;
+    bool mouseIsPress;
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+private slots:
+    void on_closePushButton_clicked();
 };
 
 #endif // ABOUTDIALOG_H

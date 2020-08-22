@@ -109,9 +109,9 @@
                   <item>
                    <layout class="QHBoxLayout" name="horizontalLayout_19">
                     <item>
-                     <widget class="QPushButton" name="remoterLermButton">
+                     <widget class="QPushButton" name="learnPushButton">
                       <property name="text">
-                       <string>遥控器对码</string>
+                       <string>对码</string>
                       </property>
                       <property name="autoDefault">
                        <bool>false</bool>
@@ -119,9 +119,9 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="detecterLermButton">
+                     <widget class="QPushButton" name="resetPushButton">
                       <property name="text">
-                       <string>探测器对码</string>
+                       <string>恢复出厂</string>
                       </property>
                       <property name="autoDefault">
                        <bool>false</bool>

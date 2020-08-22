@@ -80,5 +80,14 @@
         <file>image/systemEdit.png</file>
         <file>image/xinxiluru.png</file>
         <file>image/toolbar_User.png</file>
+        <file>image/bf.png</file>
+        <file>image/cf.png</file>
+        <file>image/ed.png</file>
+        <file>image/Setting.png</file>
+        <file>image/deviceOffline.png</file>
+        <file>image/deviceOnline.png</file>
+        <file>image/devOff.png</file>
+        <file>image/devOn.png</file>
+        <file>image/tishi.png</file>
     </qresource>
 </RCC>

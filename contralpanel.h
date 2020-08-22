@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include "customContro/cpushbutton.h"
+#include "serchedit.h"
 
 class ContralPanel : public QWidget
 {
@@ -14,15 +16,19 @@ signals:
     void defence();
     void disDefence();
     void setDevice();
-
+    void serchTest(const QString str);
 private slots:
     void on_defenceButton_clicked();
     void on_disDefenceButton_clicked();
     void on_setButton_clicked();
+    void on_serch(const QString str);
 private:
     QPushButton *defenceButton;
     QPushButton *disDefenceButton;
-    QPushButton *setButton;
+    CPushButton *setButton;
+    SerchEdit *edit;
+protected:
+    void paintEvent(QPaintEvent *event);
 public slots:
     void updateState(bool enble);
 };

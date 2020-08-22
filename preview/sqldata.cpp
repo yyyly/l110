@@ -23,6 +23,7 @@ SqlData::SqlData()
        deviceImf.channalAmount = query.value(8).toInt();
        deviceImf.luserId = -1;
        deviceImf.playId = -1;
+       deviceImf.lineState = Camero::OffLine;
        cameraImfMap[serial] = deviceImf;
    }
    query.exec("SELECT * FROM channelName");

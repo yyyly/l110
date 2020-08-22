@@ -33,15 +33,41 @@ private slots:
     void on_alarmDelPushButton_clicked();
 
     void on_pushButton_clicked();
+
+    void on_closePushButton_clicked();
+
 signals:
     void deleNumList(const QList<int> list);
-
+    void dataChange();
 private:
     Ui::DataEntryDialog *ui;
     QSqlTableModel deviceModel;
     QDataWidgetMapper mapper;
     QSqlTableModel partModel;
     QSqlTableModel alarmModel;
+    QPoint mousePos;
+    bool mouseIsPress;
+    QPoint dragPosition;   //鼠标拖动的位置
+    int    edgeMargin;     //鼠标检测的边缘距离
+    enum {nodir,
+          top = 0x01,
+          bottom = 0x02,
+          left = 0x04,
+          right = 0x08,
+          topLeft = 0x01 | 0x04,
+          topRight = 0x01 | 0x08,
+          bottomLeft = 0x02 | 0x04,
+          bottomRight = 0x02 | 0x08} resizeDir;
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+    void mousePressEvent(QMouseEvent*event);
+    void mouseMoveEvent(QMouseEvent*event);
+    void mouseReleaseEvent(QMouseEvent*event);
+    void showEvent(QShowEvent *);
+    void closeEvent(QCloseEvent *);
+    void paintEvent(QPaintEvent *event);
+private:
+    void testEdge();  //检测鼠标是否接近窗口边缘
 };
 
 #endif // DATAENTRYDIALOG_H

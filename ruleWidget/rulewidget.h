@@ -11,6 +11,7 @@
 #include"./csqltablemode.h"
 #include"rulemodel.h"
 #include"./customdata.h"
+#include"soundplayer.h"
 #include<QMap>
 namespace Ui {
 class RuleWidget;
@@ -41,15 +42,18 @@ private:
     bool mouseIsPress;
     Ui::RuleWidget *ui;
     int lineWidth = 2;
-    QSound *soundPlayer;
+    SoundPlayer *soundPlayer;
     QModelIndex currentIndex;
     QFileDialog *fielDialog;
     QString path;
     RuleModel model;
     QMap<QString,Ruler> rulers;
+    QString mFilter;
 signals:
     void rulerChange();
 
+private slots:
+    void on_checkBox_stateChanged(int arg1);
 };
 
 #endif // RULEWIDGET_H

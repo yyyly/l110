@@ -26,7 +26,8 @@ enum{
     NOTICE_PERSON,
     NOTICE_PHONE,
     ALARM_CLASS,
-    VEDIO_PATH
+    VEDIO_PATH,
+    MAIN_ALARM_KEY
 };
 
 MessageRecord::MessageRecord(QWidget *parent)
@@ -64,6 +65,7 @@ MessageRecord::MessageRecord(QWidget *parent)
     messageView->view->setColumnHidden(CHARG1_PHONE,true);
     messageView->view->setColumnHidden(CHARG2_NAME,true);
     messageView->view->setColumnHidden(CHARG2_PHONE,true);
+    messageView->view->setColumnHidden(MAIN_ALARM_KEY,true);
     ViewItemDelege *delege = new ViewItemDelege(this);
     connect(delege,SIGNAL(play(QModelIndex)),this,SLOT(itemButtonClicked(QModelIndex)));
     messageView->view->setItemDelegateForColumn(VEDIO_PATH,delege);

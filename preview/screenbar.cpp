@@ -12,18 +12,21 @@ ScreenBar::ScreenBar(int n,QWidget *parent)
     :QWidget(parent),
       gLayout(new QGridLayout()),
       n(n),
-      bottom(new BottomBar)
+      bottom(new BottomBar),
+      currentScreenNum(n)
 {
     Screen *screen = nullptr;
     for(int i = 0;i < n;i++)
     {
         screen = new Screen(i);
         connect(screen,SIGNAL(selectedStateIsChange(int)),this,SLOT(selectScreenChanged(int)));
+        connect(screen,&Screen::toMax,this,&ScreenBar::singleShowScreen);
+        connect(screen,&Screen::toNormal,this,&ScreenBar::normalShowScreen);
         pScreenVec.push_back(screen);
     }
     pScreenVec.value(0)->setSelectState(Screen::SELECTED);
     selectedScreen = pScreenVec.value(0);
-    previousSelectedScreen = nullptr;
+    previousSelectedScreen = selectedScreen;
     gLayout->setMargin(2);
     gLayout->setSpacing(2);
     setCustomLayout(n,0);
@@ -42,27 +45,46 @@ void ScreenBar::setCustomLayout(int screenNum,int type)
     Q_UNUSED(type);
     if(screenNum == 2)
     {
+        currentScreenNum = screenNum;
         int i;
         Screen *screen;
         for(i = 0;i < screenNum;i++)
         {
             screen = pScreenVec.value(i);
+            screen->setScreenNormal();
             screen->show();
            gLayout->addWidget(screen,0,i,1,1);
         }
     }
     else {
+        currentScreenNum = screenNum;
         int rowNum = (int)std::sqrt(screenNum);
         int i;
         Screen *screen;
         for(i = 0;i < screenNum;i++)
         {
             screen = pScreenVec.value(i);
+            screen->setScreenNormal();
             screen->show();
            gLayout->addWidget(screen,i/ rowNum,i % rowNum,1,1);
         }
     }
 
+}
+
+void ScreenBar::singleShowScreen(int n)
+{
+    foreach (auto iter, pScreenVec) {
+        if(iter->getNum() != n)
+        {
+            iter->hide();
+        }
+    }
+}
+
+void ScreenBar::normalShowScreen()
+{
+    changeScreenNum(currentScreenNum);
 }
 
 void ScreenBar::changeScreenNum(int n)// n = 1,4,16
@@ -80,6 +102,8 @@ void ScreenBar::changeScreenNum(int n)// n = 1,4,16
         {
             screen = new Screen(i);
             connect(screen,SIGNAL(selectedStateIsChange(int)),this,SLOT(selectScreenChanged(int)));
+            connect(screen,&Screen::toMax,this,&ScreenBar::singleShowScreen);
+            connect(screen,&Screen::toNormal,this,&ScreenBar::normalShowScreen);
             pScreenVec.push_back(screen);
         }
     }
@@ -95,7 +119,17 @@ void ScreenBar::selectScreenChanged(int n)
 
 Screen* ScreenBar::getScreen()
 {
-    return previousSelectedScreen;
+    /*if(selectedScreen->getPlayState() == Screen::PLAY)
+    {
+        Screen *pScreen = selectedScreen;
+        setNextSelectScreen();
+        previousSelectedScreen = pScreen;
+    }
+    if(previousSelectedScreen->getPlayState() == Screen::PLAY)
+    {
+        setNextSelectScreen();
+    }*/
+    return  previousSelectedScreen;
 }
 
 void ScreenBar::setNextSelectScreen()

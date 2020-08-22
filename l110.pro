@@ -8,6 +8,7 @@ QT       += core gui
 QT       += network
 QT       += sql
 QT       += multimedia
+QT       += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -20,8 +21,9 @@ TEMPLATE = app
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-INCLUDEPATH += D:\Documents\CameroNet
-INCLUDEPATH += D:\Documents\Screen
+INCLUDEPATH += D:\git\l110
+INCLUDEPATH += D:\git\CameroNet
+INCLUDEPATH += D:\git\Screen
 INCLUDEPATH += D:\Documents\player
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -30,6 +32,20 @@ INCLUDEPATH += D:\Documents\player
 
 
 SOURCES += main.cpp\
+    accountform.cpp \
+    dataEntry/alarmimformodel.cpp \
+    dataEntry/entryform.cpp \
+    devicemodel/icondeswidget.cpp \
+    editWidget/comboxdatamodel.cpp \
+    editWidget/learndialog.cpp \
+    editWidget/messgingbypassworddialog.cpp \
+    ks500a.cpp \
+    linewidget.cpp \
+    log.cpp \
+    manageaccountdialog.cpp \
+    popwidget.cpp \
+    registerwidget.cpp \
+    ruleWidget/soundplayer.cpp \
     screenpools.cpp \
     z1801.cpp \
     wrapper.cpp \
@@ -72,11 +88,9 @@ SOURCES += main.cpp\
     devicesetmodel.cpp \
     devicesetitemdelegate.cpp \
     dataEntry/dataentrydialog.cpp \
-    dataEntry/entryform.cpp \
     VedioLink/vediolinkconfigdialog.cpp \
     VedioLink/intlistmodle.cpp \
     VedioLink/ctablewidget.cpp \
-    bombScreen/bombscreen.cpp \
     controlwidget.cpp \
     mytimer.cpp \
     messageRecord/viewitemdelege.cpp \
@@ -98,6 +112,20 @@ SOURCES += main.cpp\
 
 
 HEADERS  += \
+    accountform.h \
+    dataEntry/alarmimformodel.h \
+    dataEntry/entryform.h \
+    devicemodel/icondeswidget.h \
+    editWidget/comboxdatamodel.h \
+    editWidget/learndialog.h \
+    editWidget/messgingbypassworddialog.h \
+    ks500a.h \
+    linewidget.h \
+    log.h \
+    manageaccountdialog.h \
+    popwidget.h \
+    registerwidget.h \
+    ruleWidget/soundplayer.h \
     screenpools.h \
     z1801p.h \
     wrapper.h \
@@ -143,11 +171,9 @@ HEADERS  += \
     devicesetmodel.h \
     devicesetitemdelegate.h \
     dataEntry/dataentrydialog.h \
-    dataEntry/entryform.h \
     VedioLink/vediolinkconfigdialog.h \
     VedioLink/intlistmodle.h \
     VedioLink/ctablewidget.h \
-    bombScreen/bombscreen.h \
     controlwidget.h \
     mytimer.h \
     messageRecord/viewitemdelege.h \
@@ -174,6 +200,13 @@ RESOURCES += \
     qss.qrc
 
 FORMS += \
+    accountform.ui \
+    dataEntry/entryform.ui \
+    editWidget/learndialog.ui \
+    editWidget/messgingbypassworddialog.ui \
+    manageaccountdialog.ui \
+    popwidget.ui \
+    registerwidget.ui \
     ruleWidget/rulewidget.ui \
     preview/screentoolbar.ui \
     preview/ptzcontrol.ui \
@@ -181,10 +214,8 @@ FORMS += \
     editWidget/systemeditdialog.ui \
     editWidget/devicesetwidget.ui \
     dataEntry/dataentrydialog.ui \
-    dataEntry/entryform.ui \
     VedioLink/vediolinkconfigdialog.ui \
     VedioLink/ctablewidget.ui \
-    bombScreen/bombscreen.ui \
     controlwidget.ui \
     bottomstatu.ui \
     preview/addandeditedialog.ui \
@@ -195,7 +226,8 @@ FORMS += \
     aboutdialog.ui \
     changeaccountdidalog.ui
 
-
+include(log4qt/log4qt.pri)
+include(xlsx/qtxlsx.pri)
 LIBS += -L../l110/lib -ljcsdk
 LIBS += -L../l110/lib -llibScreen -llibCameroNet -llibplayer
 

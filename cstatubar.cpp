@@ -15,10 +15,14 @@ CStatuBar::CStatuBar(QWidget *parent)
     connect(timer,SIGNAL(timeout()),this,SLOT(HideWidget()));
 }
 
-void CStatuBar::showMessage(const QString str, int time)
+void CStatuBar::showMessage(const QString str)
 {
+    if(str == "串口故障")
+      {
+        return;
+    }
     message = str;
-    timer->start(time);//ms
+    timer->start(1000);//ms
     this->show();
 }
 

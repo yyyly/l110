@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QMimeData>
+#include <QStyleOptionGraphicsItem>
 #include "globdata.h"
 #include "pixmapitem.h"
 
@@ -15,6 +16,7 @@ PixmapItem::PixmapItem(AreaOption o, QGraphicsItem *parent, QObject *p)
     setFlag(QGraphicsItem::ItemIsMovable);
     setAcceptHoverEvents(true);
     setShapeMode(BoundingRectShape);
+    setFlag(ItemIgnoresTransformations,true);
     AlarmType type = o.type;
     switch (type) {
     case AlarmType::FIRE:
@@ -28,14 +30,25 @@ PixmapItem::PixmapItem(AreaOption o, QGraphicsItem *parent, QObject *p)
     }
     break;
     default:
+    {
+        setPixmap(QPixmap(":/areaMapEditDiaLog/images/alarm_normal.png"));
+    }
         break;
     }
     setPos(o.pos);
+
 }
 
 QRectF PixmapItem::boundingRect() const
 {
-    return QRectF(0,0,32,52);
+    return QRectF(-16,-34,30,52);
+}
+
+QPainterPath PixmapItem::shape() const
+{
+    QPainterPath path;
+    path.addRect(-16,-34,30,52);
+    return  path;
 }
 
 void PixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -85,6 +98,9 @@ void PixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             }
             break;
             default:
+            {
+                drag->setPixmap(QPixmap(":/areaMapEditDiaLog/images/alarm_normal.png"));
+            }
                 break;
             }
             drag->exec();
@@ -95,13 +111,16 @@ void PixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void PixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QRect rect = option->rect;
-    QRect textRect = rect.adjusted(0,35,0,0);
-    QGraphicsPixmapItem::paint(painter,option,widget);
-    painter->save();
+
+    QRect pixRext = QRect(-16,-34,32,34);
+    QRect textRect = QRect(-16,2,32,16);
+    painter->drawPixmap(pixRext,this->pixmap());
     painter->setPen(Qt::blue);
-    painter->drawText(textRect,Qt::AlignHCenter,alarmName);
-    painter->restore();
+    painter->setBrush(QBrush(Qt::blue));
+    painter->drawRect(textRect);
+
+    painter->setPen(Qt::white);
+    painter->drawText(textRect,Qt::AlignCenter,alarmName);
 }
 
 

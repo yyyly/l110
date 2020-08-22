@@ -19,6 +19,8 @@ public:
 
 private slots:
     void on_inquiryPushButton_clicked();
+    void on_pushButton_clicked();
+
 signals:
     void queryResult(int n);
     void filterChanged(const QString filter);

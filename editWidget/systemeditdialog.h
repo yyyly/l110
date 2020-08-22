@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QTabWidget>
 #include"globaloption.h"
+#include "cstatubar.h"
 
 
 namespace Ui {
@@ -33,6 +34,7 @@ private:
     int defListenPort;
     int defRecordTime;
     int defStream;
+    CStatuBar *bar;
 protected:
     void paintEvent(QPaintEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);

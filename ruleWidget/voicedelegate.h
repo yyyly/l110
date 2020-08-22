@@ -13,6 +13,7 @@ public:
     VoiceDelegate(int VoiceColumn,QObject *parent = 0);
 protected:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
 private:
     int VoiceColumn = 2;
 };

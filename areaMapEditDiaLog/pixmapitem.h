@@ -38,6 +38,7 @@ public:
     friend bool operator ==(const PixmapItem &,const PixmapItem &);
 protected:
     QRectF boundingRect() const;
+    QPainterPath shape() const;
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);

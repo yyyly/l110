@@ -1,7 +1,8 @@
 #include <QLocalSocket>
 #include "singleapplication.h"
 
-SingleApplication::SingleApplication(int &argc, char *argv[], const QString uniqueKey) : QApplication(argc, argv), _uniqueKey(uniqueKey)
+SingleApplication::SingleApplication(int &argc, char *argv[], const QString uniqueKey)
+    : QApplication(argc, argv), _uniqueKey(uniqueKey)
 
 {
     sharedMemory.setKey(_uniqueKey);

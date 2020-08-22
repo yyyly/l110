@@ -5,6 +5,9 @@
 #include "devicesetmodel.h"
 #include "z1801.h"
 #include "cstatubar.h"
+#include <QComboBox>
+#include <QLabel>
+#include <QTimer>
 
 namespace Ui {
 class DeviceSetWidget;
@@ -63,6 +66,21 @@ private slots:
 
     void updateKeyMessing(const KeyOption &option);
 
+
+
+    void on_learnPushButton_clicked();
+
+    void on_resetPushButton_clicked();
+
+    void linkCom();
+
+    void handelComLink(const QString str);
+
+    void findCom();
+
+protected:
+    void resizeEvent(QResizeEvent *);
+
 private:
     Ui::DeviceSetWidget *ui;
     DeviceSetModel *model;
@@ -70,7 +88,11 @@ private:
     bool isSetReplay;
     int replayNum;
     CStatuBar *bar;
+    QComboBox *comboBox;
     KeyOption keyOption;
+    QPushButton *button;
+    QLabel *label;
+    QTimer *autoFindCom;
 };
 
 #endif // DEVICESETWIDGET_H

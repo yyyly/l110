@@ -7,7 +7,7 @@ class CPushButton : public QPushButton
 {
     Q_OBJECT
 public:
-    CPushButton(QWidget *parent = 0);
+    CPushButton(QWidget *parent = nullptr);
     void setButtonStyle(QString imgsrc, int CutSec);
     //void resizeEvent(QResizeEvent *event);
 };

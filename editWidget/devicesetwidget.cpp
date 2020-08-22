@@ -4,7 +4,13 @@
 #include <QDateTime>
 #include <QDate>
 #include <QTime>
-
+#include <QScopedPointer>
+#include <QSerialPortInfo>
+#include <QSerialPort>
+#include "learndialog.h"
+#include "messgingbypassworddialog.h"
+#include "globdata.h"
+#include "ks500a.h"
 
 DeviceSetWidget::DeviceSetWidget(QWidget *parent,Z1801 *z) :
     QDialog(parent),
@@ -15,38 +21,81 @@ DeviceSetWidget::DeviceSetWidget(QWidget *parent,Z1801 *z) :
     bar(new CStatuBar(this)),
     replayNum(0)
 {
-    ui->setupUi(this);
-    ui->tabWidget->setCurrentIndex(0);
-    ui->busComboBox->hide();
-    ui->wireLessComboBox->hide();
-    ui->wireRadioButton->setChecked(true);
-    ui->tableView->setItemDelegate(new DeviceSetItemDelegate());
-    ui->tableView->setModel(model);
-    ui->tableView->setAlternatingRowColors(true);
-    ui->tableView->setEditTriggers(QAbstractItemView::CurrentChanged);
-    ui->tableView->setColumnWidth(1,200);
-    ui->tableView->verticalHeader()->setVisible(false);
-    ui->p1->setCheckable(true);
-    this->setWindowTitle("主机设置");
-    int w = (this->width() - bar->width()) / 2;
-    int h = this->height() - bar->height() -80;
+
+    if(mType == MachineType::KS_Z801A)
+    {
+        ui->setupUi(this);
+        ui->tabWidget->setCurrentIndex(0);
+        ui->busComboBox->hide();
+        ui->wireLessComboBox->hide();
+        ui->wireRadioButton->setChecked(true);
+        ui->tableView->setItemDelegate(new DeviceSetItemDelegate());
+        ui->tableView->setModel(model);
+        ui->tableView->setAlternatingRowColors(true);
+        ui->tableView->setEditTriggers(QAbstractItemView::CurrentChanged);
+        ui->tableView->setColumnWidth(1,200);
+        ui->tableView->verticalHeader()->setVisible(false);
+        ui->p1->setCheckable(true);
+        this->setWindowTitle("主机设置");
+        this->installEventFilter(this);
+        ui->defenceHourSpinBox->setRange(0,24);
+        ui->defenceMintueSpinBox->setRange(0,24);
+        ui->outdefenceHourSpinBox->setRange(0,59);
+        ui->outdefenceMintueSpinBox->setRange(0,59);
+        int w = (this->width() - bar->width()) / 2;
+        int h = this->height() - bar->height() -80;
+        bar->setGeometry(w,h,160,40);
+        bar->raise();
+        bar->hide();
+        connect(ui->pollButton,SIGNAL(clicked()),this,SLOT(on_pollButton_clicked()));
+        connect(ui->setButton,SIGNAL(clicked()),this,SLOT(on_setButton_clicked()));
+        connect(ui->busRadioButton,SIGNAL(clicked(bool)),this,SLOT(on_busRadioButton_clicked(bool)));
+        connect(ui->wireRadioButton,SIGNAL(clicked(bool)),this,SLOT(on_wirelessRadioButton_clicked()));
+        connect(z1801,SIGNAL(partCoumt(int)),this,SLOT(partNumUpdate(int)));
+        connect(z1801,SIGNAL(alarmImfByAddress(QList<AlarmProperty>)),
+                this,SLOT(newAlarmPropertys(QList<AlarmProperty>)));
+        connect(z1801,SIGNAL(delayTime(const deviceDelayTime &)),this,SLOT(delayTimeUpdate(const deviceDelayTime &)));
+        connect(z1801,SIGNAL(defenceImfor(const autoDefenceImfor &)),this,SLOT(defenceTimeUpdate(const autoDefenceImfor &)));
+        connect(z1801,SIGNAL(keyMessing(const KeyOption &)),this,SLOT(updateKeyMessing(const KeyOption &)));
+    }
+    else
+    {
+        this->setFixedSize(210,180);
+        comboBox = new QComboBox(this);
+        comboBox->setFixedSize(80,25);
+        button = new QPushButton(this);
+        label = new QLabel(this);
+        label->setStyleSheet("QLabel{color:red}");
+        label->setText("串口故障");
+        label->setFixedHeight(25);
+        label->hide();
+        button->setText("打开串口");
+        QVBoxLayout *vLayout = new QVBoxLayout(this);
+        QHBoxLayout *hlayout1 = new QHBoxLayout(this);
+        hlayout1->addWidget(comboBox);
+        hlayout1->addWidget(button);
+        hlayout1->addStretch();
+        label->move(20,120);
+        vLayout->addLayout(hlayout1);
+        setLayout(vLayout);
+        bar->hide();
+        autoFindCom = new QTimer(this);
+        autoFindCom->start(1000);
+        findCom();
+        connect(autoFindCom,&QTimer::timeout,this,&DeviceSetWidget::findCom);
+        connect(button,&QPushButton::clicked,this,&DeviceSetWidget::linkCom);
+        connect(Ks500a::get500a(),&Ks500a::linkSucced,bar,&CStatuBar::showMessage);
+        connect(Ks500a::get500a(),&Ks500a::linkSucced,this,&DeviceSetWidget::handelComLink);
+    }
+}
+
+void DeviceSetWidget::resizeEvent(QResizeEvent *)
+{
+    int w = 18;
+    int h = 6;
     bar->setGeometry(w,h,160,40);
     bar->raise();
     bar->hide();
-    ui->defenceHourSpinBox->setRange(0,24);
-    ui->defenceMintueSpinBox->setRange(0,24);
-    ui->outdefenceHourSpinBox->setRange(0,59);
-    ui->outdefenceMintueSpinBox->setRange(0,59);
-    connect(ui->pollButton,SIGNAL(clicked()),this,SLOT(on_pollButton_clicked()));
-    connect(ui->setButton,SIGNAL(clicked()),this,SLOT(on_setButton_clicked()));
-    connect(ui->busRadioButton,SIGNAL(clicked(bool)),this,SLOT(on_busRadioButton_clicked(bool)));
-    connect(ui->wireRadioButton,SIGNAL(clicked(bool)),this,SLOT(on_wirelessRadioButton_clicked()));
-    connect(z1801,SIGNAL(partCoumt(int)),this,SLOT(partNumUpdate(int)));
-    connect(z1801,SIGNAL(alarmImfByAddress(QList<AlarmProperty>)),
-            this,SLOT(newAlarmPropertys(QList<AlarmProperty>)));
-    connect(z1801,SIGNAL(delayTime(const deviceDelayTime &)),this,SLOT(delayTimeUpdate(const deviceDelayTime &)));
-    connect(z1801,SIGNAL(defenceImfor(const autoDefenceImfor &)),this,SLOT(defenceTimeUpdate(const autoDefenceImfor &)));
-    connect(z1801,SIGNAL(keyMessing(const KeyOption &)),this,SLOT(updateKeyMessing(const KeyOption &)));
 }
 
 DeviceSetWidget::~DeviceSetWidget()
@@ -54,11 +103,57 @@ DeviceSetWidget::~DeviceSetWidget()
     delete ui;
 }
 
+void DeviceSetWidget::linkCom()
+{
+    if(button->text() == "打开串口")
+    {
+        Ks500a::get500a()->openSeria(comboBox->currentText());
+    }
+    else{
+        Ks500a::get500a()->closeSeria();
+    }
+}
+
+void DeviceSetWidget::handelComLink(const QString str)
+{
+    if(str == "连接成功"){
+        button->setText("关闭串口");
+        label->hide();
+    }
+    else if(str == "串口故障"){
+        button->setText("打开串口");
+        label->show();
+    }
+    else if(str == "串口关闭")
+    {
+        button->setText("打开串口");
+    }
+}
+
+
+void DeviceSetWidget::findCom()
+{
+    QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
+    comboBox->clear();
+    foreach (auto item,info) {
+        comboBox->addItem(item.portName());
+    }
+    if(!comboBox->currentText().isEmpty())
+    {
+        autoFindCom->stop();
+        if(label->isVisible())
+        {
+            label->hide();
+        }
+    }
+}
+
+
 void DeviceSetWidget::newAlarmPropertys(QList<AlarmProperty> propertyList)
 {
     if(isSetReplay)
     {
-        bar->showMessage("设置成功",1000);
+        bar->showMessage("设置成功");
         replayNum++;
         if(replayNum == 2)
         {
@@ -68,7 +163,7 @@ void DeviceSetWidget::newAlarmPropertys(QList<AlarmProperty> propertyList)
     }
     else {
         model->setAlarmPropertys(propertyList);
-        bar->showMessage("查询成功",1000);
+        bar->showMessage("查询成功");
     }
 
 }
@@ -414,4 +509,28 @@ void DeviceSetWidget::updateKeyMessing(const KeyOption &option)
     int keyofPartIndex = (int)ckeyofPart - 48;
     ui->keyPropertyComboBox->setCurrentIndex(keyproIndex);
     ui->keyofPartComboBox->setCurrentIndex(keyofPartIndex);
+}
+
+void DeviceSetWidget::on_learnPushButton_clicked()
+{
+    QScopedPointer<LearnDialog> dialog(new LearnDialog(this,z1801));
+    dialog->exec();
+}
+
+void DeviceSetWidget::on_resetPushButton_clicked()
+{
+    QScopedPointer<MessgingByPassWordDialog> dialog(new MessgingByPassWordDialog());
+    int t = dialog->exec();
+    if(t == QDialog::Rejected)
+    {
+        return;
+    }
+    else
+    {
+        if(!z1801)
+            return;
+        if(!z1801->isLogin())
+            return;
+        z1801->reset();
+    }
 }

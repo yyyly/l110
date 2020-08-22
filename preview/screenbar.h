@@ -48,11 +48,14 @@ private:
     Screen *previousSelectedScreen;
     BottomBar *bottom;
     CameroNet *cameroNet;
+    int currentScreenNum;
 signals:
 
 public slots:
     void selectScreenChanged(int n);
     void changeScreenNum(int n);
+    void singleShowScreen(int n);
+    void normalShowScreen();
 };
 
 #endif // SCREENBAR_H

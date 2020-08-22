@@ -17,6 +17,8 @@ public:
 
     void resetRootNode(Node *node);
 
+    QModelIndex getDeviceIndex();
+
     QModelIndex indexFromAlarm(int alarm);
 
     QModelIndex indexFromUserData(int part,int alarm);//通过分区和防区找到index
@@ -26,6 +28,8 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 
     QModelIndex parent(const QModelIndex &child) const;
+
+    QModelIndex findText(const QString text);
 
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;
@@ -42,6 +46,9 @@ public slots:
 private:
     Node *nodeFromIndex(const QModelIndex &index) const;
     Node *rootNode;
+    QModelIndex first;
+    QString currentText;
+    int serchNum;
 };
 
 #endif // DEVICEMODEL_H

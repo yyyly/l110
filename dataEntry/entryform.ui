@@ -76,6 +76,9 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="styleSheet">
+            <string notr="true">color: rgb(255, 0, 0);</string>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -120,6 +123,16 @@
             </property>
            </item>
           </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="partLabel">
+           <property name="text">
+            <string>所属分区</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="partComboBox"/>
          </item>
         </layout>
        </item>

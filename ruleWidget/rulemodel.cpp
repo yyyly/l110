@@ -36,6 +36,7 @@ QVariant RuleModel::data(const QModelIndex &idx, int role) const
         return Qt::AlignCenter;
     }
         break;
+
     default:
         return this->QSqlTableModel::data(idx,role);
         break;

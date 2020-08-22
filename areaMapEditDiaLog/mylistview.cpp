@@ -101,6 +101,9 @@ void MyListView::perforDrag()
         }
             break;
         default:
+        {
+            drag->setPixmap(QPixmap(":/areaMapEditDiaLog/images/alarm_normal.png"));
+        }
             break;
         }
 

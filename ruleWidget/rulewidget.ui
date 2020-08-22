@@ -528,14 +528,14 @@ background-color: rgb(255, 248, 243);</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>myEdit</class>
-   <extends>QLineEdit</extends>
-   <header location="global">myedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>CPushButton</class>
    <extends>QPushButton</extends>
-   <header location="global">customContro/cpushbutton</header>
+   <header location="global">D:\git\l110\customContro\cpushbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>myEdit</class>
+   <extends>QLineEdit</extends>
+   <header location="global">D:\git\l110\ruleWidget\myedit.h</header>
   </customwidget>
  </customwidgets>
  <resources>

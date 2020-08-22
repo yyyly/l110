@@ -25,6 +25,9 @@
 #include "dataEntry/dataentrydialog.h"
 #include "VedioLink/vediolinkconfigdialog.h"
 #include "controlwidget.h"
+#include "ruleWidget/soundplayer.h"
+#include "popwidget.h"
+
 
 struct RelatedMessingByNum
 {
@@ -63,12 +66,17 @@ private:
     QMap<int,QString> messingTypeMap;
     void InitAlarmDeviceImf();
     int currentAlarmNum;
-    QSound *soundPlayer;
+    SoundPlayer *soundPlayer;
+    QList<int> defenceAlarmNumList;
+    PopWidget *popWidget;
 
 public:
     RuleWidget *ruleDialog;
     DataEntryDialog *dataEntryDialog;
     VedioLinkConfigDialog *vediolLinkConfigDialog;
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+    void showEvent(QShowEvent *event);
 signals:
     void DataPush(MessingType type,QMap<QString,QVariant> *data);
     void alarmNumCheck(int n);
@@ -77,9 +85,13 @@ public slots:
 
     void alarmDviceImf(AlarmStatu* statuArray,int* PartArray);
 
+    void alarmDviceOff();
+
     void alarmMessing(AlarmMessing messing);
 
     void alarmNumFromView(QModelIndex index);
+
+    void alarmNumFromTree(QModelIndex index);
 
     void messingFilter(int state);// 0 只显示报警信息，1只显示系统信息，2显示所有信息
 
@@ -96,6 +108,15 @@ public slots:
     void showBarMessing(const QString &messing);
 
     void updateNickNmae(const QString &name);
+
+    void hand500Amessing(AlarmMessing &messing);
+
+    void findStr(const QString str);
+
+    void dataChanged();
+private:
+    void updateAlarmDeviceImf();
+    void updateDefenceAlarmNumList();
 };
 
 #endif // ALARMWIDGET_H

@@ -14,6 +14,8 @@ logWidget::logWidget(QWidget *parent) :
     setButtonStyle(ui->closeButton,":/image/toolbar_close.png",4);
     setButtonStyle(ui->toMinButton,":/image/toolbar_min.png",4);
     ui->widget->installEventFilter(this);
+    ui->passwardlineEdit->setEchoMode(QLineEdit::Password);
+
     connect(timer,SIGNAL(timeout()),this,SLOT(on_logButton_clicked()));
 }
 
@@ -81,6 +83,16 @@ bool logWidget::on_logButton_clicked()
        return false;
     }
 
+}
+
+QString logWidget::getAccont()
+{
+    return ui->accountlineEdit->text();
+}
+
+QString logWidget::getPassword()
+{
+    return ui->passwardlineEdit->text();
 }
 
 void logWidget::on_closeButton_clicked()

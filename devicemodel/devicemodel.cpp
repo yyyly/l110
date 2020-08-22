@@ -61,6 +61,57 @@ QModelIndex DeviceModel::index(int row, int column, const QModelIndex &parent) c
     return createIndex(row,column,child);
 }
 
+QModelIndex DeviceModel::findText(const QString text)
+{
+    if(currentText == text)//说明是第二次或更多次搜索
+    {
+        serchNum++;
+    }
+    else {
+        currentText = text;
+        serchNum = 0;
+    }
+    QModelIndex deviceIndex = getDeviceIndex();
+    Node *node = nodeFromIndex(deviceIndex);
+    int j = 0;
+    int k = 0;
+    foreach (auto subNode, node->childen) {
+        if(subNode->str.contains(text))
+        {
+            j++;
+            if(j > serchNum)
+            {
+                if(serchNum == 0)
+                {
+                    first = createIndex(k,0,subNode);
+                }
+                return  createIndex(k,0,subNode);
+            }
+
+
+        }
+        int i = 0;
+        foreach(auto subsunNode,subNode->childen) {
+            if(subsunNode->str.contains(text))
+            {
+                j++;
+                if(j > serchNum)
+                {
+                    if(serchNum == 0)
+                    {
+                        first = createIndex(i,0,subsunNode);
+                    }
+                    return  createIndex(i,0,subsunNode);
+                }
+            }
+            i++;
+        }
+        k++;
+    }
+    serchNum = 0;
+    return  first;
+}
+
 QModelIndex DeviceModel::indexFromUserData(int part, int alarm)
 {
     QModelIndex rootIndex;
@@ -101,6 +152,11 @@ QModelIndex DeviceModel::indexFromUserData(int part, int alarm)
         }
     }
     return QModelIndex();
+}
+
+QModelIndex DeviceModel::getDeviceIndex()
+{
+    return  index(0,0,QModelIndex());
 }
 
 QModelIndex DeviceModel::indexFromAlarm(int alarm)
@@ -164,10 +220,16 @@ QList<QModelIndex> DeviceModel::indexFromPart(int part)
         for(int i = 0;i < rowCount(deviceIndex);i++)
         {
             partIndex = index(i,0,deviceIndex);
-            for(int j = 0; j < rowCount(partIndex);j++)
+            if(partIndex.data(Qt::UserRole + 2) == Node::Alarm)
             {
-                alarmIndex = index(j,0,partIndex);
-                list << alarmIndex;
+                list << partIndex;
+            }
+            else {
+                for(int j = 0; j < rowCount(partIndex);j++)
+                {
+                    alarmIndex = index(j,0,partIndex);
+                    list << alarmIndex;
+                }
             }
         }
         return  list;
@@ -243,7 +305,6 @@ QVariant DeviceModel::data(const QModelIndex &index, int role) const
     {
         return  int(Qt::AlignHCenter | Qt::AlignVCenter);
     }
-
     default:
         return QVariant();
     }
@@ -301,7 +362,7 @@ bool DeviceModel::setData(const QModelIndex &index, const QVariant &value, int r
         break;
     }
 
- }
+}
 
 Qt::ItemFlags DeviceModel::flags(const QModelIndex &index) const
 {

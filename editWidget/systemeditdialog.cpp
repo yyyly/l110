@@ -7,10 +7,12 @@
 #include<QMouseEvent>
 #include<QPainter>
 #include<QStyleOption>
+#include "cstatubar.h"
 
 SystemEditDialog::SystemEditDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SystemEditDialog)
+    ui(new Ui::SystemEditDialog),
+    bar(new CStatuBar(this))
 {
     setWindowFlags(Qt::FramelessWindowHint | windowFlags());
     ui->setupUi(this);
@@ -131,6 +133,8 @@ void SystemEditDialog::on_dirSaveButton_clicked()
     settings.setValue("vedioSaveDir",getVedioSaveDir());
     settings.setValue("imageSaveDir",getImageSaveDir());
     settings.endGroup();
+    bar->move(200,50);
+    bar->showMessage("保存成功");
 }
 
 void SystemEditDialog::on_dirDefaultButton_clicked()

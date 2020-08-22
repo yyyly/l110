@@ -27,6 +27,11 @@ private:
     QSqlTableModel *linkModle;
     CTableWidget *w;
     QMap<int,QString> chanmelNames;
+    QPoint mousePos;
+    bool mouseIsPress;
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+    void paintEvent(QPaintEvent *event);
 public slots:
     void updateChannel();
     void setItemWidget();
@@ -35,6 +40,7 @@ private slots:
 
     void on_addPushButton_clicked();
     void on_deletePushButton_clicked();
+    void on_closePushButton_clicked();
 };
 
 #endif // VEDIOLINKCONFIGDIALOG_H

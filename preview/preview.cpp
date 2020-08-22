@@ -7,6 +7,7 @@
 #include<QHeaderView>
 #include<QSortFilterProxyModel>
 #include<QRegExp>
+#include<QMessageBox>
 #include "serchedit.h"
 #include "addandeditedialog.h"
 
@@ -86,6 +87,11 @@ void Preview::DeviceDoublePress(const QModelIndex &index)
     {
         screenBar->setNextSelectScreen();
         Screen *s = screenBar->getScreen();
+        if(s->getPlayState() == Screen::PLAY)
+        {
+           QMessageBox::warning(this,"提醒","重新选择播放窗口");
+           return;
+        }
         hk->realPlay(&info,channel,*s);
     }
 
@@ -95,6 +101,10 @@ void Preview::playCamero(CameraDeviceImf *camero, Camero::LineState state)
 {
     screenBar->setNextSelectScreen();
     Screen *s = screenBar->getScreen();
+    if(s->getPlayState() == Screen::PLAY)
+    {
+        return;
+    }
     hk->realPlay(camero,1,*s);
 }
 

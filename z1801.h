@@ -19,6 +19,7 @@ struct AlarmMessing{
     AlarmType type;
     int zoneId;
     int aLarmID;
+    QString typeDes;
 };
 
 struct DeviceStatu
@@ -80,6 +81,14 @@ struct KeyOption
     bool isValid(){return !keyProperty.isEmpty();}
 };
 
+struct CodeImfor
+{
+    int handleType;//0对码 1删除
+    int deviceType;//0遥控 1探头
+    int add;//地址
+    QString messing;
+};
+
 class Z1801 : public QObject
 {
     Q_OBJECT
@@ -95,6 +104,14 @@ public:
 
     void defenceDevice(int part,bool defence);
 
+    void learnCode(int type,int add);
+
+    void deleteCode(int type,int add);
+
+    void quiteLearnCode();
+
+    void reset();
+
     QByteArray buildCMD(QByteArray str);
 
     qint64 sendCmd(QByteArray cmd);
@@ -109,6 +126,8 @@ public:
     void reSendPartImfor();
 signals:
     void deviceLogin();
+
+    void deviceOff();
 
     void haveAlarmMessing(AlarmMessing messing);
 
@@ -129,6 +148,8 @@ signals:
     void defenceImfor(const autoDefenceImfor &imfor);
 
     void keyMessing(const KeyOption &option);
+
+    void codeMessing(const CodeImfor &imfor);
 private:
     QTcpSocket *tcpId;
     QTcpSocket tcpSocket;
@@ -151,11 +172,12 @@ private:
     Assist assistArray[13];
     void initAsistArray();
     QTimer timer;
-
+    QTimer *heartTimer;
     
 private slots:
     void newConnect();
     void getRequest();
+    void deviceOffline();
 public slots:
      void getDeviceImf();
 

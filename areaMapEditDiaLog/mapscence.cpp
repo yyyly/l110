@@ -14,7 +14,8 @@ MapScence::MapScence(QObject *parent)
     :QGraphicsScene(parent),
       bgImage(nullptr)
 {
-
+    isMainDisplay = false;
+    active = false;
 }
 
 
@@ -32,13 +33,18 @@ MapScence::~MapScence()
         delete bgImage;
     }
 }
-void MapScence::setBackImage(const QImage &image)
+void MapScence::setBackImage(const QPixmap *image)
 {
     if(bgImage)
     {
         delete bgImage;
+        bgImage = nullptr;
     }
-    bgImage = new QImage(image);
+    if(image != nullptr)
+    {
+        bgImage = new QPixmap(*image);
+    }
+
 }
 
 void MapScence::mousePressEvent(QMouseEvent *event)
@@ -50,17 +56,49 @@ void MapScence::drawBackground(QPainter *painter, const QRectF &rect)
 {
    if(bgImage)
    {
-       painter->drawImage(0,0,*bgImage);
+       painter->drawPixmap(0,0,*bgImage);
+       setActive(true);
+   }
+   else if(isMainDisplay)
+   {
+       QRectF rect = QRectF(0,0,400,300);
+       QFont font = painter->font();
+       font.setPointSize(16);
+       painter->setFont(font);
+       QRectF cRect = rect.adjusted(20,18,rect.width(),36);
+       painter->drawText(cRect,"欢迎使用接警客户端");
+       font.setPointSize(14);
+       painter->setFont(font);
+       cRect = rect.adjusted(20,56,rect.width(),68);
+       painter->drawText(cRect,"为了更好的使用本软件，您需要录入必要信息：");
+       font.setPointSize(12);
+       font.setFamily("仿宋");
+       painter->setFont(font);
+       cRect = rect.adjusted(20,88,rect.width(),100);
+       painter->drawText(cRect,"①在【信息录入】中录入相应防区信息");
+       cRect = rect.adjusted(20,115,rect.width(),127);
+       painter->drawText(cRect,"②点击右侧添加防区图按键添加防区图，并拖动防区到防区图上保存");
+       cRect = rect.adjusted(20,142,rect.width(),154);
+       painter->drawText(cRect,"③在【视频预览】界面添加视频信息");
+       cRect = rect.adjusted(20,169,rect.width(),181);
+       painter->drawText(cRect,"④在【联动配置】中关联防区和视频通道，报警后可自动弹屏并保存录像");
+       cRect = rect.adjusted(20,196,rect.width(),208);
+       painter->drawText(cRect,"⑤在【接警规则】中自定义警情显示颜色，声音播报等");
    }
    else
    {
-       QGraphicsScene::drawBackground(painter,rect);
+      QGraphicsScene::drawBackground(painter,rect);
    }
 }
 
 void MapScence::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     event->acceptProposedAction();
+}
+
+void MapScence::setIsMainDisplay(bool is)
+{
+    isMainDisplay = is;
 }
 
 void MapScence::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
@@ -83,11 +121,14 @@ void MapScence::dropEvent(QGraphicsSceneDragDropEvent *event)
         {
             type = (AlarmType)query.value(0).toInt();
         }
+        else
+        {
+            type = AlarmType::ALARM_TYPE_ALL;
+        }
         AreaOption option(i,type,event->scenePos());
         item = new PixmapItem(option);
         item->setAlarmName(QString("%1防区").arg(i));
         this->addItem(item);
-        QRectF rect = this->sceneRect();
         emit dropFinished(i);
     }
     else

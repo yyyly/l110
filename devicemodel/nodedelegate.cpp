@@ -11,6 +11,10 @@ NodeDelegate::NodeDelegate(QObject *parent)
     :QItemDelegate(parent)
 {
     QPixmap *icon = nullptr;
+    icon = new QPixmap(":/image/devOn.png");
+    iconVector.append(icon);
+    icon = new QPixmap(":/image/devOff.png");
+    iconVector.append(icon);
     icon = new QPixmap(":/image/defence.png");
     iconVector.append(icon);
     icon = new QPixmap(":/image/outDefence.png");
@@ -45,9 +49,10 @@ void NodeDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
         int y1 = rect.y();
         QRect iconRect = QRect(x1,y1,h,h);
         QRect displayRect = rect - QMargins(h,0,0,0);
-        int s = (int)index.model()->data(index,Qt::UserRole + 1).toInt() - 4;
-        drawDecoration(painter,option,iconRect,*iconVector.at(s));
-        drawDisplay(painter,option,displayRect,text);
+        int s = (int)index.model()->data(index,Qt::UserRole + 1).toInt() - 2;
+            drawDecoration(painter,option,iconRect,*iconVector.at(s));
+            drawDisplay(painter,option,displayRect,text);
+
     }
         break;
     case Node::Partition:
@@ -68,12 +73,24 @@ void NodeDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
         }
         drawBackground(painter,myOption,index);
         drawDisplay(painter,option,option.rect,text);
+
     }
         break;
     case Node::Device:
     {
-
+        QRect rect = option.rect;
+        int h = rect.height();
+        int x1 = rect.x();
+        int y1 = rect.y();
+        QRect iconRect = QRect(x1,y1,h,h);
+        QRect displayRect = rect - QMargins(h,0,0,0);
+        int s = (int)index.model()->data(index,Qt::UserRole + 1).toInt();
+        drawDecoration(painter,option,iconRect,iconVector.at(s)->scaled(h-5,h-5));
+        QStyleOptionViewItem myOption = option;
+        myOption.font.setPixelSize(16);
+        drawDisplay(painter,myOption,displayRect,text);
     }
+        break;
     default:
     {
         drawDisplay(painter,option,option.rect,text);
@@ -91,7 +108,7 @@ QSize NodeDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
     if (value.isValid())
     {
         size = qvariant_cast<QSize>(value);
-        return size;
+        return size * 1.5;
     }
     QRect decorationRect = rect(option, index, Qt::DecorationRole);
     QRect displayRect = rect(option, index, Qt::DisplayRole);
@@ -99,5 +116,5 @@ QSize NodeDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
 
     doLayout(option, &checkRect, &decorationRect, &displayRect, true);
     size =  (decorationRect|displayRect|checkRect).size();
-    return size;
+    return size * 1.5;
 }

@@ -18,11 +18,16 @@
 #include<QSound>
 #include<QStandardItemModel>
 #include<QScrollBar>
+#include <QThread>
 #include"globdata.h"
 #include"z1801p.h"
 #include "bombScreen/bombscreen.h"
 #include "globaloption.h"
 #include "mytimer.h"
+#include "ks500a.h"
+#include "globdata.h"
+#include "devicemodel/icondeswidget.h"
+#include "log4qt/logger.h"
 
 
 
@@ -44,7 +49,8 @@ enum{
     NOTICE_PERSON,
     NOTICE_PHONE,
     ALARM_CLASS,
-    VEDIO_PATH
+    VEDIO_PATH,
+    MAIN_ALARM_KEY
 };
 
 enum ALARMING_CLASS
@@ -67,18 +73,26 @@ AlarmWidget::AlarmWidget(QWidget *parent)
       deviceSetWidget(new DeviceSetWidget(this,z1801)),
       controWidget(new ControlWidget(this)),
       currentAlarmNum(-1),
-      soundPlayer(nullptr)
+      soundPlayer(new SoundPlayer(this)),
+      popWidget(new PopWidget(this))
 {
     //updateNickNmae(glob_user);
     InitAlarmDeviceImf();
+    if(mType == MachineType::KS_500A)
+    {
+        updateDefenceAlarmNumList();
+    }
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding);
     statusBar->setFixedWidth(200);
     QVBoxLayout *leftLayout = new QVBoxLayout();
-    leftLayout->setMargin(0);
-    leftLayout->setSpacing(0);
+    IconDesWidget *iconDes= new IconDesWidget(this);
+    leftLayout->setContentsMargins(0,2,0,0);
+    leftLayout->setSpacing(10);
     leftLayout->addWidget(contralPanel);
     leftLayout->addWidget(devPanel);
+    leftLayout->addWidget(iconDes);
     //leftLayout->addStretch();
+    statusBar->hide();
     leftLayout->addWidget(statusBar);
     imforView->setMinimumHeight(150);
     imforView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::MinimumExpanding);
@@ -120,9 +134,11 @@ AlarmWidget::AlarmWidget(QWidget *parent)
     model->setHeaderData(CHARG2_PHONE,Qt::Horizontal,"联系电话");
     model->setFilter("IS_HANDLE != 1 OR IS_HANDLE IS null");
     model->select();
+    popWidget->setModel(model);
     /*proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setSourceModel(model);
     proxyModel->setFilterKeyColumn(ALARM_CLASS);*/
+    imforView->installEventFilter(this);
     imforView->setModel(model);
     imforView->setSelectionBehavior(QAbstractItemView::SelectRows);
     imforView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
@@ -135,6 +151,7 @@ AlarmWidget::AlarmWidget(QWidget *parent)
     imforView->setColumnHidden(HANDLE_OPINION,true);
     imforView->setColumnHidden(NOTICE_PERSON,true);
     imforView->setColumnHidden(NOTICE_PHONE,true);
+    imforView->setColumnHidden(MAIN_ALARM_KEY,true);
     imforView->resizeColumnToContents(EVENT_TIME);
     imforView->resizeColumnToContents(REPORT_TIME);
     //imforView->horizontalHeader()->swapSections(0,2);
@@ -153,29 +170,54 @@ AlarmWidget::AlarmWidget(QWidget *parent)
     }
     ImforParse *dataParse = new ImforParse();
     Node *rootNode = dataParse->parse(alarmDeviceImf,false);
+    delete dataParse;
     devModel = new DeviceModel(this);
     devModel->setRootNode(rootNode);
     devPanel->setModel(devModel);
     devPanel->setItemDelegate(new NodeDelegate());
     devPanel->setFixedWidth(200);
     devPanel->header()->hide();
+    devPanel->setObjectName("alarmTree");
+    devPanel->expandToDepth(2);
     connect(z1801,SIGNAL(getDeviceImfFinished(AlarmStatu *,int *)),this,SLOT(alarmDviceImf(AlarmStatu*,int*)));
     connect(z1801,SIGNAL(haveAlarmMessing(AlarmMessing)),this,SLOT(alarmMessing(AlarmMessing)));
     connect(z1801,SIGNAL(deviceLogin()),this,SLOT(deviceLog()));
     connect(z1801,SIGNAL(updatePartImfor(const PartImf &)),this,SLOT(updatePartImfor(const PartImf &)));
     connect(z1801,SIGNAL(barMessing(const QString &)),this,SLOT(showBarMessing(const QString &)));
+    connect(z1801,&Z1801::deviceOff,this,&AlarmWidget::alarmDviceOff);
     connect(ruleDialog,SIGNAL(rulerChange()),this,SLOT(rulerChanged()));
     connect(contralPanel,SIGNAL(setDevice()),deviceSetWidget,SLOT(show()));
     connect(contralPanel,SIGNAL(defence()),this,SLOT(deviceDefence()));
     connect(contralPanel,SIGNAL(disDefence()),this,SLOT(deviceDisDefence()));
+    connect(devPanel,&QTreeView::doubleClicked,this,&AlarmWidget::alarmNumFromTree);
     connect(imforView,SIGNAL(clicked(QModelIndex)),this,SLOT(alarmNumFromView(QModelIndex)));
     connect(this,SIGNAL(alarmNumCheck(int)),areaMap,SLOT(alarmNumChecked(int)));
     connect(controWidget,SIGNAL(stateChange(int)),this,SLOT(messingFilter(int)));
     connect(controWidget,SIGNAL(handleHappened()),areaMap,SLOT(closeChannal()));
     connect(dataEntryDialog,&DataEntryDialog::deleNumList,areaMap,&AreaMap::deleOptionbyNumList);
+    connect(dataEntryDialog,&DataEntryDialog::dataChange,this,&AlarmWidget::dataChanged);
+    connect(Ks500a::get500a(),&Ks500a::messing,this,&AlarmWidget::hand500Amessing);
+    connect(contralPanel,&ContralPanel::serchTest,this,&AlarmWidget::findStr);
     //BombScreen *screen = new BombScreen(,this);
+}
 
-    //screen->show();
+void AlarmWidget::showEvent(QShowEvent *event)
+{
+
+}
+
+
+bool AlarmWidget::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj == imforView)
+    {
+        if(event->type() == QEvent::FocusOut)
+        {
+            event->ignore();
+            return true;
+        }
+    }
+    return false;
 }
 
 void AlarmWidget::updateNickNmae(const QString &name)
@@ -186,6 +228,13 @@ void AlarmWidget::updateNickNmae(const QString &name)
     {
         glob_nickName = query.value(0).toString();
     }
+}
+
+void AlarmWidget::findStr(const QString str)
+{
+   QModelIndex index = devModel->findText(str);
+   devPanel->setCurrentIndex(index);
+   devPanel->setFocus();
 }
 
 void AlarmWidget::updateMessing()
@@ -217,18 +266,43 @@ void AlarmWidget::updateMessing()
         messing.person_2_phone = query.value(5).toString();
         partMessingMap[num] = messing;
     }
+}
 
-
+void AlarmWidget::hand500Amessing(AlarmMessing &messing)
+{
+    if(messing.aLarmID == 0)
+    {
+        messing.zoneId = 0;
+    }
+    else
+    {
+        QSqlQuery query;
+        QString sql = QString("SELECT PART_NUM FROM alarmImfor WHERE ALARM_NUM = %1")
+                .arg(messing.aLarmID);
+        query.exec(sql);
+        if(query.next())
+        {
+            messing.zoneId = query.value(0).toInt();
+        }
+        else
+        {
+            messing.zoneId = 0;
+        }
+    }
+    alarmMessing(messing);
 }
 
 void AlarmWidget::alarmMessing(AlarmMessing messing)
 {
     //if(messing.type != AlarmType::STONE_ALARM)
-        //return;
+    //return;
     int row = 0;
     int alarmId = messing.aLarmID;
     int partId = messing.zoneId;
+    Log4Qt::Logger::logger("Z1801")->debug(QString("%1").arg(messing.type));
     QString type = messingTypeMap.value(messing.type);
+    if(type.isEmpty())
+        type = messing.typeDes;
     if(type.isEmpty())
         return;
     model->insertRows(row,1);
@@ -242,7 +316,7 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
         model->setData(model->index(row,ZONE_NAME),alarmMessingMap.value(alarmId).name);
     }
     model->setData(model->index(row,ZONE_TYPE),type);
-     model->setData(model->index(row,PART_NUM),partId);
+    model->setData(model->index(row,PART_NUM),partId);
     model->setData(model->index(row,PART_NAME),partMessingMap.value(partId).name);
     model->setData(model->index(row,EVENT_TIME),messing.time.toString("yyyy-MM-dd hh:mm:ss"));
     model->setData(model->index(row,REPORT_TIME),QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
@@ -273,22 +347,20 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
             model->setData(model->index(row,CHARG2_PHONE),alarm_person_2_phone);
         }
     }
-    //播放声音
-    Ruler ruler = rulers.value(type);
-    if(soundPlayer != nullptr)
-    {
-        soundPlayer->stop();
-        delete soundPlayer;
-    }
-    soundPlayer = new QSound(ruler.soundAddress);
-    soundPlayer->setLoops(ruler.playTimes);
-    soundPlayer->play();
 
+    model->submit();
     //播放绑定的视频
-    if(type == "24小时有声报警" || type == "出/入口报警" || type == "24小时无声报警" || type == "防盗防区"
-            || type == "火警防区" || type == "紧急报警")
+    if((mType==MachineType::KS_Z801A && (type == "24小时有声报警" || type == "出/入口报警" || type == "24小时无声报警" || type == "防盗防区"
+            || type == "火警防区" || type == "紧急报警")) || (mType == MachineType::KS_500A &&(type == "防盗报警" || type == "防拆报警")))
     {
         //areaMap->alarmNumChecked(alarmId);
+
+        //左下角弹出报警框
+        //传一个index和model的指针
+        int main_alarm_key = model->index(0,MAIN_ALARM_KEY).data().toInt();
+        popWidget->addIndex(main_alarm_key);
+        popWidget->show();
+
         Screen *pre = areaMap->getPreScreen();
         if(pre)
         {
@@ -316,7 +388,7 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
                 QDir *dir = new QDir();
                 if(!dir->exists(fileDir))
                 {
-                   dir->mkdir(fileDir);
+                    dir->mkdir(fileDir);
                 }
                 QString file = QDateTime::currentDateTime().toString("yyyy-MM-dd_hhmmss.zzz") + ".mp4";
                 QString fileName = fileDir + "/" + file;
@@ -325,10 +397,11 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
                 LLONG PlayHandle = cameroNet->recordVedio(&imf,query.value(1).toInt(),pFileName,screen);
                 if(PlayHandle >= 0)//打开成功
                 {
+                    Log4Qt::Logger::logger("AlarmWidget")->debug(QString("开启录像成功，句柄为%1").arg(PlayHandle));
                     imf.playId = PlayHandle;
                     areaMap->updatePlayScreenMap(alarmId,screen);
                     QPoint pos = areaMap->getPosByNum(alarmId);
-                    screen->setGeometry(pos.x() + 35,pos.y(),280,210);
+                    screen->setGeometry(pos.x()+15,pos.y() - 34,280,210);
                     screen->setPlayState(Screen::PLAY);
                     screen->show();
                     //根剧这个判断防区对应的视频是否正在播放或者录像
@@ -345,8 +418,9 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
                 }
             }
         }
-
+        setCursor(Qt::ArrowCursor);
     }
+
     else if(type == "远程布防" || type == "布防" || type == "自动布防")
     {
         model->setData(model->index(row,ALARM_CLASS),ALARMING_WARMING);
@@ -374,9 +448,59 @@ void AlarmWidget::alarmMessing(AlarmMessing messing)
         }
         devPanel->update();
     }
+    else if(mType == MachineType::KS_500A && (type == "主机布防"))
+    {
+        QList<QModelIndex> list = devModel->indexFromPart(0);
+        QModelIndex index;
+        foreach (index, list) {
+            devModel->setData(index,Node::Defence,Qt::UserRole+1);
+        }
+        alarmDeviceImf.deviceStatu = Node::Defence;
+        devPanel->update();
+
+    }
+    else if(mType == MachineType::KS_500A && (type == "主机撤防"))
+    {
+        QList<QModelIndex> list = devModel->indexFromPart(0);
+        QModelIndex index;
+        foreach (index, list) {
+            if(defenceAlarmNumList.contains(index.data(Qt::UserRole).toInt()))
+            {
+               devModel->setData(index,Node::Defence,Qt::UserRole+1);
+            }
+            else
+            {
+                devModel->setData(index,Node::OutDefence,Qt::UserRole+1);
+            }
+        }
+        alarmDeviceImf.deviceStatu = Node::OutDefence;
+        devPanel->update();
+    }
+    else if(type == "设备上线")
+    {
+        QModelIndex index = devModel->getDeviceIndex();
+        devModel->setData(index,Node::Online,Qt::UserRole+1);
+        devPanel->update();
+    }
+    else if(type == "设备下线" || type == "设备离线")
+        {
+        QModelIndex index = devModel->getDeviceIndex();
+        devModel->setData(index,Node::OffLine,Qt::UserRole+1);
+        QList<QModelIndex> list = devModel->indexFromPart(0);
+        QModelIndex idx;
+        foreach (idx, list) {
+            devModel->setData(idx,Node::NoStaru,Qt::UserRole+1);
+        }
+        alarmDeviceImf.deviceStatu = Node::OffLine;
+        devPanel->update();
+    }
     else {
         model->setData(model->index(row,ALARM_CLASS),DEVICE_SYSTEM);
     }
+    //播放声音
+    Ruler ruler = rulers.value(type);
+    soundPlayer->stopPlay();
+    soundPlayer->playSound(ruler.soundAddress,ruler.playTimes);
     model->submitAll();
     model->setFilter("IS_HANDLE != 1 OR IS_HANDLE IS null");
     model->select();
@@ -450,6 +574,15 @@ void AlarmWidget::stopRecord(LONG handle)
 
 }
 
+void AlarmWidget::alarmNumFromTree(QModelIndex index)
+{
+    if(index.data(Qt::UserRole + 2)==Node::Alarm)
+    {
+        int num = index.data(Qt::UserRole).toInt();
+        emit alarmNumCheck(num);
+    }
+}
+
 void AlarmWidget::alarmNumFromView(QModelIndex index)
 {
     int row = index.row();
@@ -469,10 +602,183 @@ void AlarmWidget::rulerChanged()
     imforView->update();
 }
 
+void AlarmWidget::updateAlarmDeviceImf()
+{
+
+        QSqlQuery query;
+        QString sql = "SELECT PART_NUM,PART_NAME FROM partImfor";
+        query.exec(sql);
+        PartImf partImf;
+        AlarmImf alarmImf;
+        alarmDeviceImf.partList.clear();
+        while(query.next())
+        {
+            partImf.num = query.value(0).toInt();
+            partImf.partName = query.value(1).toString();
+            if(partImf.partName.isEmpty())
+            {
+                partImf.partName = QString("第%1分区").arg(partImf.num);
+            }
+            alarmDeviceImf.partList.append(partImf);
+        }
+        if(alarmDeviceImf.partList.length() == 0)
+        {
+            partImf.num = -1;
+            partImf.partName = "";
+            alarmDeviceImf.partList.append(partImf);
+        }
+        for(auto item = alarmDeviceImf.partList.begin();
+            item != alarmDeviceImf.partList.end();
+            item++)
+        {
+            int partNum = item->num;
+            if(partNum != -1)
+            {
+                sql = QString("SELECT ALARM_NUM,ALARM_NAME FROM alarmImfor WHERE PART_NUM = %1").arg(partNum);
+            }
+            else
+            {
+                sql = QString("SELECT ALARM_NUM,ALARM_NAME FROM alarmImfor");
+            }
+            query.exec(sql);
+            while (query.next()) {
+                alarmImf.alarmNum = query.value(0).toInt();
+                alarmImf.alarmName = query.value(1).toString();
+                if(alarmImf.alarmName.isEmpty())
+                {
+                    alarmImf.alarmName = QString("第%1防区").arg(alarmImf.alarmNum);
+                }
+                //alarmImf.alarmStatu = AlarmStatu::OutDefence;
+                item->alarmList.append(alarmImf);
+            }
+        }
+
+}
+
+void AlarmWidget::updateDefenceAlarmNumList()
+{
+    defenceAlarmNumList.clear();
+    QSqlQuery query;
+    QString sql = "SELECT alarm_num FROM alarmImfor WHERE ALARM_TYPE"
+                  " IN (0x1122,0x1123,0x1110,0x1151)";
+    query.exec(sql);
+    while(query.next()){
+        defenceAlarmNumList << query.value(0).toInt();
+    }
+}
+
 void AlarmWidget::InitAlarmDeviceImf()
 {
-    alarmDeviceImf.deviceName = "报警主机";
+    QSqlQuery query;
+    QString sql = "SELECT ALARM_DEVICE_NAME FROM alarmDeviceImf";
+    query.exec(sql);
+    QString name;
+    if(query.next())
+    {
+        name = query.value(0).toString();
+    }
+    else
+    {
+        name = "报警主机";
+    }
+    alarmDeviceImf.deviceName = name;
     alarmDeviceImf.deviceStatu = Node::OffLine;
+    if(mType == MachineType::KS_500A)
+    {
+        sql = "SELECT PART_NUM,PART_NAME FROM partImfor";
+        query.exec(sql);
+        PartImf partImf;
+        AlarmImf alarmImf;
+        while(query.next())
+        {
+            partImf.num = query.value(0).toInt();
+            partImf.partName = query.value(1).toString();
+            if(partImf.partName.isEmpty())
+            {
+                partImf.partName = QString("第%1分区").arg(partImf.num);
+            }
+            alarmDeviceImf.partList.append(partImf);
+        }
+        if(alarmDeviceImf.partList.length() == 0)
+        {
+            partImf.num = -1;
+            partImf.partName = "";
+            alarmDeviceImf.partList.append(partImf);
+        }
+        for(auto item = alarmDeviceImf.partList.begin();
+            item != alarmDeviceImf.partList.end();
+            item++)
+        {
+            int partNum = item->num;
+            if(partNum != -1)
+            {
+                sql = QString("SELECT ALARM_NUM,ALARM_NAME FROM alarmImfor WHERE PART_NUM = %1").arg(partNum);
+            }
+            else
+            {
+                sql = QString("SELECT ALARM_NUM,ALARM_NAME FROM alarmImfor");
+            }
+            query.exec(sql);
+            while (query.next()) {
+                alarmImf.alarmNum = query.value(0).toInt();
+                alarmImf.alarmName = query.value(1).toString();
+                if(alarmImf.alarmName.isEmpty())
+                {
+                    alarmImf.alarmName = QString("第%1防区").arg(alarmImf.alarmNum);
+                }
+                //alarmImf.alarmStatu = AlarmStatu::OutDefence;
+                item->alarmList.append(alarmImf);
+            }
+        }
+    }
+}
+
+void AlarmWidget::dataChanged()
+{
+    updateDefenceAlarmNumList();
+    updateAlarmDeviceImf();
+    QSqlQuery query;
+    query.exec("SELECT ALARM_NUM,ALARM_NAME FROM alarmImfor");
+    while(query.next())
+    {
+        int num = query.value(0).toInt();
+        QString name = query.value(1).toString();
+        nameMap[num] = name;
+    }
+    ImforParse *dataParse = new ImforParse();
+    Node *rootNode = dataParse->parse(alarmDeviceImf,false);
+    delete dataParse;
+    devModel->resetRootNode(rootNode);
+    devPanel->setModel(devModel);
+    devPanel->expandToDepth(2);
+    if(alarmDeviceImf.deviceStatu == Node::Defence)
+    {
+        QList<QModelIndex> list = devModel->indexFromPart(0);
+        QModelIndex index;
+        foreach (index, list) {
+            devModel->setData(index,Node::Defence,Qt::UserRole+1);
+        }
+        index = devModel->getDeviceIndex();
+        devModel->setData(index,Node::Online,Qt::UserRole+1);
+    }
+    else if(alarmDeviceImf.deviceStatu == Node::OutDefence)
+    {
+        QList<QModelIndex> list = devModel->indexFromPart(0);
+        QModelIndex index;
+        foreach (index, list) {
+            if(defenceAlarmNumList.contains(index.data(Qt::UserRole).toInt()))
+            {
+               devModel->setData(index,Node::Defence,Qt::UserRole+1);
+            }
+            else
+            {
+                devModel->setData(index,Node::OutDefence,Qt::UserRole+1);
+            }
+        }
+        index = devModel->getDeviceIndex();
+        devModel->setData(index,Node::Online,Qt::UserRole+1);
+    }
+    devPanel->update();
 }
 
 void AlarmWidget::deviceLog()
@@ -483,6 +789,10 @@ void AlarmWidget::deviceLog()
 
 void AlarmWidget::deviceDefence()
 {
+    if(z1801 == nullptr)
+        return;
+    if(!z1801->isLogin())
+        return;
     QModelIndex index = devPanel->currentIndex();
     if(index.isValid())
     {
@@ -506,6 +816,10 @@ void AlarmWidget::deviceDefence()
 
 void AlarmWidget::deviceDisDefence()
 {
+    if(z1801 == nullptr)
+        return;
+    if(!z1801->isLogin())
+        return;
     QModelIndex index = devPanel->currentIndex();
     if(index.isValid())
     {
@@ -525,6 +839,19 @@ void AlarmWidget::deviceDisDefence()
         }
 
     }
+}
+
+void AlarmWidget::alarmDviceOff()
+{
+    alarmDeviceImf.partList.clear();
+    InitAlarmDeviceImf();
+    ImforParse *dataParse = new ImforParse();
+    Node *rootNode = dataParse->parse(alarmDeviceImf,false);
+    devModel->resetRootNode(rootNode);
+    devPanel->setModel(devModel);
+    devPanel->expandToDepth(2);
+    devPanel->update();
+    delete dataParse;
 }
 void AlarmWidget::alarmDviceImf(AlarmStatu* statuArray,int* PartArray)
 {
@@ -589,23 +916,24 @@ void AlarmWidget::alarmDviceImf(AlarmStatu* statuArray,int* PartArray)
     devPanel->setModel(devModel);
     devPanel->expandToDepth(2);
     devPanel->update();
+    delete  dataParse;
 }
 
 void AlarmWidget::messingFilter(int state)
 {
-   if(state == 0)//只显示报警信息
-   {
+    if(state == 0)//只显示报警信息
+    {
         model->setFilter("ALARM_CLASS == 0 AND (IS_HANDLE != 1 OR IS_HANDLE IS null)");
         model->select();
-   }
-   else if(state == 1)
-   {
-       model->setFilter("ALARM_CLASS == 1 AND (IS_HANDLE != 1 OR IS_HANDLE IS null)");
-       model->select();
-   }
-   else
-   {
-       model->setFilter("IS_HANDLE != 1 OR IS_HANDLE IS null");
-       model->select();
-   }
+    }
+    else if(state == 1)
+    {
+        model->setFilter("ALARM_CLASS == 1 AND (IS_HANDLE != 1 OR IS_HANDLE IS null)");
+        model->select();
+    }
+    else
+    {
+        model->setFilter("IS_HANDLE != 1 OR IS_HANDLE IS null");
+        model->select();
+    }
 }

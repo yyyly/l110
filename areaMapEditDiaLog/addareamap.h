@@ -14,6 +14,7 @@
 #include <QPainter>
 #include <QRectF>
 #include <QMouseEvent>
+#include <QMenu>
 
 #include "mylistview.h"
 #include "mapscence.h"
@@ -21,17 +22,11 @@
 #include "pixmapitem.h"
 
 
-struct AreaMapOption
-{
-public:
-    AreaMapOption(){}
-    QString areaMapName;
-    QString backIamgePath;
-    QList<AreaOption> areaList;
-};
+
 
 class EditWidget : public QWidget
 {
+    Q_OBJECT
 public:
     EditWidget(QWidget *parent = 0,QString name = QString());
     QLabel *label;
@@ -39,24 +34,34 @@ public:
     QPushButton *openImageButton;
     QPushButton *okButton;
     QPushButton *cancelButton;
+public slots:
+    void eidtFinished();
 };
 
 class CustomView : public QGraphicsView
 {
+    Q_OBJECT
 public:
-    CustomView(QWidget *parent = nullptr):
-        QGraphicsView(parent)
-    {}
+    CustomView(QWidget *parent = nullptr);
+    void setOption(AreaMapOption *o);
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *e);
     void showEvent(QShowEvent *event);
+    void paintEvent(QPaintEvent *event);
     bool viewportEvent(QEvent *event);
     void wheelEvent(QWheelEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event);
     //void drawBackground(QPainter *painter, const QRectF &rect);
 
 
     QSize sizeHint() const;
+private:
+    QMenu *menu;
+    double factor;
+    AreaMapOption *option;
+public slots:
+    void saveFactor();
 
 };
 
@@ -64,7 +69,7 @@ class AddAreaMap : public QDialog
 {
     Q_OBJECT
 public:
-    AddAreaMap(const QList<int> &list, QWidget *parent = 0,AreaMapOption *o = nullptr);
+    AddAreaMap(const QList<int> &list, QWidget *parent = nullptr,AreaMapOption *o = nullptr);
 private:
     QList<int> list;
     MyListView *listView;
@@ -80,6 +85,7 @@ private:
 private:
     void assignAreaMpOption();
     bool listContaisItem(const QList<QGraphicsItem *> &list, QGraphicsItem *&item);
+    bool isNew;
 protected:
     void closeEvent(QCloseEvent *event);
 

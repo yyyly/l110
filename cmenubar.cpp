@@ -11,16 +11,15 @@
 #include "globdata.h"
 CMenuBar::CMenuBar(QWidget *parent)
     : QWidget(parent),
+      closeButton(new QPushButton(this)),
+      toMinButton(new QPushButton(this)),
+      toMaxButton(new QPushButton(this)),
       tabBar(new QTabBar(this)),
       Icon(new QMenuBar(this)),
-      closeButton(new QPushButton(this)),
-      toMaxButton(new QPushButton(this)),
-      toMinButton(new QPushButton(this)),
       accountButton(new QPushButton(this)),
-      userMenu(new QMenu(this)),
-      nickNameLabel(new QLabel(this))
+      nickNameLabel(new QLabel(this)),
+      userMenu(new QMenu(this))
 {
-    updateNickName(glob_user);
     setFixedHeight(40);
     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
     setObjectName("CmenuBar");
@@ -37,8 +36,9 @@ CMenuBar::CMenuBar(QWidget *parent)
     menu = Icon->addMenu(QIcon(":/image/icon.ico"),"");
     menu->setStyle(LocalStyle);
     QAction* changeAccountAction = userMenu->addAction("切换账户");
-    //QAction* manageAccountAction = userMenu->addAction("管理账户");
+    manageAccountAction = userMenu->addAction("管理账户");
     QAction* aboutAction = userMenu->addAction("关于");
+    updateNickName(glob_user);
     //closeButton->setFixedSize(18,16);
     //toMinButton->setFixedSize(18,16);
     //toMaxButton->setFixedSize(18,16);
@@ -79,7 +79,7 @@ CMenuBar::CMenuBar(QWidget *parent)
     midHLayout->addLayout(rVLayout);
     nickNameLabel->installEventFilter(this);
     connect(changeAccountAction,&QAction::triggered,this,&CMenuBar::ChangeAccountSlot);
-    //connect(manageAccountAction,&QAction::trigger,this,&CMenuBar::manageAccountSlot);
+    connect(manageAccountAction,&QAction::triggered,this,&CMenuBar::manageAccountSlot);
     connect(aboutAction,&QAction::triggered,this,&CMenuBar::aboutSlot);
     connect(closeButton,SIGNAL(clicked(bool)),this,SLOT(close()));
     connect(toMaxButton,SIGNAL(clicked(bool)),this,SLOT(toMaxButtonClicked()));
@@ -91,10 +91,12 @@ CMenuBar::CMenuBar(QWidget *parent)
 void CMenuBar::updateNickName(const QString &name)
 {
     QSqlQuery query;
-    query.exec(QString("SELECT NICKNAME FROM logImfor WHERE ACCOUNT = '%1'").arg(name));
+    query.exec(QString("SELECT NICKNAME,ISMANAGE FROM logImfor WHERE ACCOUNT = '%1'").arg(name));
     if(query.next())
     {
         glob_nickName = query.value(0).toString();
+        int m = query.value(1).toInt();
+        m == 0 ? manageAccountAction->setEnabled(false) : manageAccountAction->setEnabled(true);
     }
     nickNameLabel->setText(glob_nickName);
 }
@@ -116,7 +118,7 @@ void CMenuBar::aboutSlot()
 
 void CMenuBar::paintEvent(QPaintEvent *event)
 {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     QStyleOption opt;
     opt.init(this);
     QPainter p(this);
@@ -190,10 +192,11 @@ bool CMenuBar::eventFilter(QObject *obj, QEvent *event)
         if(mouseEvent->type() == QMouseEvent::MouseButtonPress)
         {
             userMenu->exec(accountButton->mapToGlobal(QPoint(-(menu->width() - accountButton->width() - nickNameLabel->width()) / 2,20)));
-            return true;
+            return false;
         }
     }
     else {
         return false;
     }
+    return false;
 }

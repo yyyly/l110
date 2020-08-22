@@ -5,6 +5,10 @@
 #include<QSettings>
 #include<QMessageBox>
 #include<QSqlQuery>
+#include<QScopedPointer>
+#include<QApplication>
+#include<QDesktopWidget>
+#include"manageaccountdialog.h"
 #include"changeaccountdidalog.h"
 #include"aboutdialog.h"
 #include"globdata.h"
@@ -38,7 +42,8 @@ Wrapper::~Wrapper()
 void Wrapper::CustomDisplay()
 {
     setWindowFlags(Qt::FramelessWindowHint | windowFlags());
-    setMinimumSize(QSize(1180,650));
+    QRect rect = QApplication::desktop()->screenGeometry();
+    setMinimumSize(QSize(rect.width()*0.90,rect.height()*0.90));
     VLayout->addWidget(menuBar);
     VLayout->addWidget(PWidgetVec[currentWidget]);
     VLayout->setMargin(0);
@@ -184,5 +189,6 @@ void Wrapper::changeAccount()
 
 void Wrapper::manageAccount()
 {
-
+    QScopedPointer<ManageAccountDialog> dialog(new ManageAccountDialog());
+    dialog->exec();
 }

@@ -7,6 +7,7 @@
 #include<QVariantList>
 #include<QDebug>
 #include<QVariantMap>
+#include "globdata.h"
 
 
 ImforParse::ImforParse()
@@ -27,7 +28,7 @@ Node *ImforParse::parse(const AlarmDeviceImf &deviceImfor, bool isLogin)
     Node *invalidNode = new Node();
     Node *rootNode = new Node(Node::Device,Node::OffLine,deviceImfor.deviceName,0);
     addChild(invalidNode,rootNode);
-    if(!isLogin)
+    if(!isLogin && mType == MachineType::KS_Z801A)
     {
         return invalidNode;
     }
@@ -37,14 +38,24 @@ Node *ImforParse::parse(const AlarmDeviceImf &deviceImfor, bool isLogin)
         QString partName = part.partName;
         int partNum = part.num;
         Node *partNode = new Node(Node::Partition,partStatu,partName,partNum);
-        addChild(rootNode,partNode);
+        if(partNum != -1)
+        {
+            addChild(rootNode,partNode);
+        }
         AlarmImf alarm;
         foreach (alarm, part.alarmList) {
             Node::Statu alarmStatu = NodeStatuFromAlarmStatus(alarm.alarmStatu);
             QString alarmName = alarm.alarmName;
             int alarmNum = alarm.alarmNum;
             Node *alarmNode = new Node(Node::Alarm,alarmStatu,alarmName,alarmNum);
-            addChild(partNode,alarmNode);
+            if(partNum != -1)
+            {
+                addChild(partNode,alarmNode);
+            }
+            else
+            {
+                addChild(rootNode,alarmNode);
+            }
         }
     }
     return invalidNode;
